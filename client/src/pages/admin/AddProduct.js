@@ -1,7 +1,7 @@
 // client/src/pages/admin/AddProduct.js
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { FaSave, FaTimes, FaPlus, FaArrowLeft, FaCheckCircle } from 'react-icons/fa';
+import { FaSave, FaTimes, FaPlus, FaArrowLeft } from 'react-icons/fa';
 import gsap from 'gsap';
 import api from '../../services/api';
 

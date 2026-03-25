@@ -1,5 +1,5 @@
 // client/src/pages/SearchResults.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import {
@@ -32,9 +32,9 @@ const SearchResults = () => {
     if (query) {
       searchProducts();
     }
-  }, [query, sortBy]);
+  }, [query, sortBy, searchProducts]);
 
-  const searchProducts = async () => {
+  const searchProducts = useCallback(async () => {
     try {
       setLoading(true);
       const { data } = await api.get(`/products?search=${encodeURIComponent(query)}`);
@@ -55,7 +55,7 @@ const SearchResults = () => {
       console.error('Search error:', error);
       setLoading(false);
     }
-  };
+  }, [query, sortBy]);
 
   const handleWishlistToggle = (product, e) => {
     e.preventDefault();

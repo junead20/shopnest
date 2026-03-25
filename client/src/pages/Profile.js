@@ -1,11 +1,10 @@
 // client/src/pages/Profile.js
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { FaUserCircle, FaEnvelope, FaUserTag, FaMapMarkerAlt, FaPhone, FaEdit, FaSave } from 'react-icons/fa';
+import { FaUserCircle, FaEnvelope, FaMapMarkerAlt, FaPhone, FaEdit, FaSave } from 'react-icons/fa';
 import api from '../services/api';
 
 const Profile = () => {
-  const { user } = useSelector((state) => state.auth);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);

@@ -8,7 +8,6 @@ import {
   FaRupeeSign,
   FaChartLine,
   FaExclamationTriangle,
-  FaCheckCircle,
   FaPlus,
   FaClipboardList
 } from 'react-icons/fa';

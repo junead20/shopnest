@@ -5,7 +5,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FaHeart, FaShoppingCart, FaTrash, FaStar, FaStarHalfAlt, FaRegStar } from 'react-icons/fa';
 import { fetchWishlist, removeFromWishlist } from '../store/slices/wishlistSlice';
 import { addToCart } from '../store/slices/cartSlice';
-import ProductImage from '../components/ProductImage';
 import { formatINRSimple } from '../utils/currency';
 
 const Wishlist = () => {
