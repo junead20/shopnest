@@ -4,7 +4,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   FaShoppingCart,
-  FaUser,
   FaSearch,
   FaHeart,
   FaBars,
@@ -14,10 +13,6 @@ import {
   FaBox,
   FaStar,
   FaMapMarkerAlt,
-  FaCrown,
-  FaTruck,
-  FaGift,
-  FaFire,
   FaAngleDown,
   FaUsers
 } from 'react-icons/fa';
@@ -29,7 +24,6 @@ const Navbar = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
 
   const dropdownRef = useRef(null);
   const mobileMenuRef = useRef(null);
@@ -50,14 +44,7 @@ const Navbar = () => {
     'Sports', 'Toys & Games'
   ];
 
-  // Handle scroll effect
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+
 
   // Close dropdown when clicking outside
   useEffect(() => {

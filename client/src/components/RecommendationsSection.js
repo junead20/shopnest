@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { FaMagic, FaStar, FaStarHalfAlt, FaRegStar, FaHeart, FaRegHeart } from 'react-icons/fa';
+import { FaMagic, FaStar, FaRegStar, FaHeart, FaRegHeart } from 'react-icons/fa';
 import api from '../services/api';
 import { formatINRSimple } from '../utils/currency';
 import { addToCart } from '../store/slices/cartSlice';

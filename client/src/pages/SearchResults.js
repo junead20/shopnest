@@ -28,12 +28,6 @@ const SearchResults = () => {
   const { user } = useSelector((state) => state.auth);
   const { items: wishlistItems } = useSelector((state) => state.wishlist);
 
-  useEffect(() => {
-    if (query) {
-      searchProducts();
-    }
-  }, [query, sortBy, searchProducts]);
-
   const searchProducts = useCallback(async () => {
     try {
       setLoading(true);
@@ -56,6 +50,14 @@ const SearchResults = () => {
       setLoading(false);
     }
   }, [query, sortBy]);
+
+  useEffect(() => {
+    if (query) {
+      searchProducts();
+    }
+  }, [query, sortBy, searchProducts]);
+
+
 
   const handleWishlistToggle = (product, e) => {
     e.preventDefault();

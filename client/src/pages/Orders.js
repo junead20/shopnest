@@ -1,5 +1,5 @@
 // client/src/pages/Orders.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   FaBox, 
@@ -8,8 +8,7 @@ import {
   FaTruck,
   FaEye,
   FaTimesCircle,
-  FaSync,
-  FaRupeeSign
+  FaSync
 } from 'react-icons/fa';
 import api from '../services/api';
 import { formatINR } from '../utils/currency';
@@ -19,11 +18,7 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
       const { data } = await api.get('/orders/myorders');
@@ -35,7 +30,13 @@ const Orders = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
+
 
   const getStatusIcon = (status) => {
     switch(status) {

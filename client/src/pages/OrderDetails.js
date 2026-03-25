@@ -1,5 +1,5 @@
 // client/src/pages/OrderDetails.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   FaArrowLeft, 
@@ -25,11 +25,7 @@ const OrderDetails = () => {
   const [error, setError] = useState(null);
   const [cancelling, setCancelling] = useState(false);
 
-  useEffect(() => {
-    fetchOrder();
-  }, [id]);
-
-  const fetchOrder = async () => {
+  const fetchOrder = useCallback(async () => {
     try {
       setLoading(true);
       const { data } = await api.get(`/orders/${id}`);
@@ -41,7 +37,13 @@ const OrderDetails = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchOrder();
+  }, [fetchOrder]);
+
+
 
   const handleCancelOrder = async () => {
     if (!window.confirm('Are you sure you want to cancel this order?')) {
@@ -72,15 +74,7 @@ const OrderDetails = () => {
     }
   };
 
-  const getStatusColor = (status) => {
-    switch(status) {
-      case 'Delivered': return 'bg-green-100 text-green-800';
-      case 'Shipped':
-      case 'Out for Delivery': return 'bg-blue-100 text-blue-800';
-      case 'Cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-yellow-100 text-yellow-800';
-    }
-  };
+
 
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString('en-IN', {

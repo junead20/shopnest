@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { FaUsers, FaArrowRight, FaLock, FaCheckCircle, FaPlus, FaClock } from 'react-icons/fa';
+import { FaUsers, FaArrowRight, FaPlus, FaClock } from 'react-icons/fa';
 import api from '../services/api';
-import { formatINR } from '../utils/currency';
 
 const MyGroups = () => {
     const [groups, setGroups] = useState([]);

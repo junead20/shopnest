@@ -1,5 +1,5 @@
 // client/src/pages/DealsPage.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import {
@@ -87,29 +87,7 @@ const DealsPage = () => {
     }
   }, [user, dispatch]);
 
-  useEffect(() => {
-    if (allProducts.length > 0) {
-      console.log(`🔄 Filtering products for deal type: ${dealType}`);
-      filterProducts();
-    }
-  }, [dealType, allProducts]);
-
-  const fetchAllProducts = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const { data } = await api.get('/products?limit=200');
-      const fetchedProducts = data.products || [];
-      console.log(`✅ Loaded ${fetchedProducts.length} products`);
-      setAllProducts(fetchedProducts);
-    } catch (error) {
-      console.error('❌ Error fetching products:', error);
-      setError('Failed to load products. Please try again.');
-      setLoading(false);
-    }
-  };
-
-  const filterProducts = () => {
+  const filterProducts = useCallback(() => {
     try {
       // Filter products based on deal type
       console.log(`🔍 Applying filter for: ${dealType}`);
@@ -137,7 +115,31 @@ const DealsPage = () => {
       setError('Error filtering products');
       setLoading(false);
     }
+  }, [dealType, allProducts, currentDeal.filter]);
+
+  useEffect(() => {
+    if (allProducts.length > 0) {
+      console.log(`🔄 Filtering products for deal type: ${dealType}`);
+      filterProducts();
+    }
+  }, [dealType, allProducts, filterProducts]);
+
+  const fetchAllProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const { data } = await api.get('/products?limit=200');
+      const fetchedProducts = data.products || [];
+      console.log(`✅ Loaded ${fetchedProducts.length} products`);
+      setAllProducts(fetchedProducts);
+    } catch (error) {
+      console.error('❌ Error fetching products:', error);
+      setError('Failed to load products. Please try again.');
+      setLoading(false);
+    }
   };
+
+
 
   const handleWishlistToggle = async (product, e) => {
     e.preventDefault();

@@ -1,5 +1,5 @@
 // client/src/pages/admin/Dashboard.js
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   FaBox,
@@ -52,9 +52,33 @@ const AdminDashboard = () => {
   const overviewRef = useRef(null);
   const actionsRef = useRef(null);
 
+    const fetchDashboardData = useCallback(async () => {
+        try {
+            setLoading(true);
+            const [ordersStats, userStats, productStats] = await Promise.all([
+                api.get('/orders/admin/stats'),
+                api.get('/auth/admin/stats'),
+                api.get('/products/admin/stats')
+            ]);
+
+            setStats({
+                orders: ordersStats.data.orderStats || {},
+                revenue: ordersStats.data.revenue || { total: 0, average: 0 },
+                users: userStats.data || { total: 0, newUsers: 0 },
+                products: productStats.data || { total: 0, lowStock: 0, categoryStats: [] }
+            });
+            setError(null);
+        } catch (err) {
+            console.error('Dashboard data error:', err);
+            setError('Failed to load dashboard data');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [fetchDashboardData]);
 
   // GSAP entrance animations
   useEffect(() => {
@@ -90,29 +114,7 @@ const AdminDashboard = () => {
     }
   }, [loading, error]);
 
-    const fetchDashboardData = async () => {
-        try {
-            setLoading(true);
-            const [ordersStats, userStats, productStats] = await Promise.all([
-                api.get('/orders/admin/stats'),
-                api.get('/auth/admin/stats'),
-                api.get('/products/admin/stats')
-            ]);
 
-            setStats({
-                orders: ordersStats.data.orderStats || {},
-                revenue: ordersStats.data.revenue || { total: 0, average: 0 },
-                users: userStats.data || { total: 0, newUsers: 0 },
-                products: productStats.data || { total: 0, lowStock: 0, categoryStats: [] }
-            });
-            setError(null);
-        } catch (err) {
-            console.error('Dashboard data error:', err);
-            setError('Failed to load dashboard data');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const orderChartData = {
         labels: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],

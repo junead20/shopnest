@@ -1,6 +1,5 @@
 // client/src/pages/Profile.js
-import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FaUserCircle, FaEnvelope, FaMapMarkerAlt, FaPhone, FaEdit, FaSave } from 'react-icons/fa';
 import api from '../services/api';
 
@@ -15,11 +14,7 @@ const Profile = () => {
     addresses: []
   });
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     try {
       const { data } = await api.get('/auth/profile');
       setProfile(data);
@@ -34,7 +29,13 @@ const Profile = () => {
       console.error('Error fetching profile:', error);
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+
 
   const handleSave = async () => {
     try {

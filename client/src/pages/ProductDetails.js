@@ -1,6 +1,6 @@
 // client/src/pages/ProductDetails.js
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   FaShoppingCart,
@@ -23,7 +23,6 @@ import api from '../services/api';
 import ProductImage from '../components/ProductImage';
 import RecommendationsSection from '../components/RecommendationsSection';
 import { ProductDetailsSkeleton } from '../components/Skeleton';
-import { formatINR } from '../utils/currency';
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -42,16 +41,28 @@ const ProductDetails = () => {
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
   const [addedToGroup, setAddedToGroup] = useState(false);
-  const [relatedProducts, setRelatedProducts] = useState([]);
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
   const [isZooming, setIsZooming] = useState(false);
+
+  const fetchProduct = useCallback(async () => {
+    try {
+      setLoading(true);
+      const { data } = await api.get(`/products/${id}`);
+      setProduct(data);
+
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching product:', error);
+      setLoading(false);
+    }
+  }, [id]);
 
   useEffect(() => {
     fetchProduct();
     if (user) {
       dispatch(fetchWishlist());
     }
-  }, [id, dispatch, user]);
+  }, [fetchProduct, dispatch, user]);
 
   useEffect(() => {
     if (product && wishlistItems) {
@@ -62,24 +73,7 @@ const ProductDetails = () => {
     }
   }, [product, wishlistItems]);
 
-  const fetchProduct = async () => {
-    try {
-      setLoading(true);
-      const { data } = await api.get(`/products/${id}`);
-      setProduct(data);
 
-      // Fetch related products
-      if (data.category) {
-        const { data: relatedData } = await api.get(`/products?category=${data.category}&limit=4`);
-        setRelatedProducts(relatedData.products?.filter(p => p._id !== data._id) || []);
-      }
-
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching product:', error);
-      setLoading(false);
-    }
-  };
 
   const handleAddToCart = () => {
     if (!user) {

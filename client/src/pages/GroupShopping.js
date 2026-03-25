@@ -1,20 +1,19 @@
 // client/src/pages/GroupShopping.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { FaUsers, FaShareAlt, FaPlus, FaThumbsUp, FaThumbsDown, FaRupeeSign, FaInfoCircle, FaClipboard, FaCheckCircle, FaExchangeAlt, FaShoppingCart, FaTruck } from 'react-icons/fa';
+import { FaUsers, FaShareAlt, FaThumbsUp, FaThumbsDown, FaInfoCircle, FaCheckCircle, FaTruck } from 'react-icons/fa';
 import { io } from 'socket.io-client';
 import api from '../services/api';
 import { formatINRSimple } from '../utils/currency';
-import { setActiveGroup, clearActiveGroup } from '../store/slices/groupSlice';
-import { addToCart } from '../store/slices/cartSlice';
+import { setActiveGroup } from '../store/slices/groupSlice';
 
 const GroupShopping = () => {
     const { token } = useParams();
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { user } = useSelector((state) => state.auth);
-    const { activeGroupToken } = useSelector((state) => state.group);
+    const { activeGroupName } = useSelector((state) => state.group);
     
     const [group, setGroup] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -25,9 +24,23 @@ const GroupShopping = () => {
         fullName: '', address: '', city: '', state: '', zipCode: '', phoneNumber: ''
     });
     const [paymentMethod, setPaymentMethod] = useState('Cash on Delivery');
-    const [socket, setSocket] = useState(null);
     const [notification, setNotification] = useState(null);
     const [joinToken, setJoinToken] = useState('');
+
+    const fetchGroup = useCallback(async () => {
+        try {
+            setLoading(true);
+            const { data } = await api.get(`/group-cart/${token}`);
+            setGroup(data);
+            dispatch(setActiveGroup({ token: data.shareToken, name: data.name }));
+        } catch (error) {
+            console.error('Error fetching group:', error);
+            alert('Failed to load group. Link might be invalid.');
+            navigate('/group-shop');
+        } finally {
+            setLoading(false);
+        }
+    }, [token, dispatch, navigate]);
 
     useEffect(() => {
         const SOCKET_URL = process.env.REACT_APP_API_URL 
@@ -35,7 +48,6 @@ const GroupShopping = () => {
             : 'http://localhost:5000';
             
         const newSocket = io(SOCKET_URL);
-        setSocket(newSocket);
 
         if (token) {
             newSocket.emit('joinGroup', token);
@@ -59,30 +71,17 @@ const GroupShopping = () => {
         });
 
         return () => newSocket.close();
-    }, [token]);
+    }, [token, fetchGroup]);
 
     useEffect(() => {
         if (token && user) {
             fetchGroup();
-        } else {
+        } else if (!token) {
             setLoading(false);
         }
-    }, [token, user]);
+    }, [token, user, fetchGroup]);
 
-    const fetchGroup = async () => {
-        try {
-            setLoading(true);
-            const { data } = await api.get(`/group-cart/${token}`);
-            setGroup(data);
-            dispatch(setActiveGroup({ token: data.shareToken, name: data.name }));
-        } catch (error) {
-            console.error('Error fetching group:', error);
-            alert('Failed to load group. Link might be invalid.');
-            navigate('/group-shop');
-        } finally {
-            setLoading(false);
-        }
-    };
+
 
     const handleCreateGroup = async (e) => {
         e.preventDefault();

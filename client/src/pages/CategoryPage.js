@@ -1,5 +1,5 @@
 // client/src/pages/CategoryPage.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import {
@@ -13,7 +13,6 @@ import {
   FaSort
 } from 'react-icons/fa';
 import api from '../services/api';
-import ProductImage from '../components/ProductImage';
 import { formatINRSimple } from '../utils/currency';
 import { addToWishlist, removeFromWishlist, fetchWishlist } from '../store/slices/wishlistSlice';
 import { addToCart } from '../store/slices/cartSlice';
@@ -32,17 +31,7 @@ const CategoryPage = () => {
   const { user } = useSelector((state) => state.auth);
   const { items: wishlistItems } = useSelector((state) => state.wishlist);
 
-  useEffect(() => {
-    fetchProducts();
-  }, [categoryName]);
-
-  useEffect(() => {
-    if (user) {
-      dispatch(fetchWishlist());
-    }
-  }, [user, dispatch]);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
       // Get ALL products for this category (no limit)
@@ -74,14 +63,21 @@ const CategoryPage = () => {
       console.error('Error fetching products:', error);
       setLoading(false);
     }
-  };
+  }, [categoryName, sortBy, priceRange]);
 
-  // Re-fetch when sort or filter changes
   useEffect(() => {
-    if (!loading) {
-      fetchProducts();
+    fetchProducts();
+  }, [fetchProducts]);
+
+  useEffect(() => {
+    if (user) {
+      dispatch(fetchWishlist());
     }
-  }, [sortBy, priceRange]);
+  }, [user, dispatch]);
+
+
+
+
 
   const handleWishlistToggle = (product, e) => {
     e.preventDefault();

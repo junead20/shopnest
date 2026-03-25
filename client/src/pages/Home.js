@@ -1,6 +1,6 @@
 // client/src/pages/Home.js
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   FaStar,
@@ -8,11 +8,9 @@ import {
   FaRegStar,
   FaHeart,
   FaRegHeart,
-  FaShoppingCart,
   FaChevronLeft,
   FaChevronRight,
   FaMagic,
-  FaLightbulb,
   FaLaptop,
   FaTshirt,
   FaHome,
@@ -29,10 +27,8 @@ import { addToWishlist, removeFromWishlist, fetchWishlist } from '../store/slice
 import { addToCart } from '../store/slices/cartSlice';
 
 const Home = () => {
-  const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const [allProducts, setAllProducts] = useState([]);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -93,7 +89,6 @@ const Home = () => {
       const products = data.products || [];
       console.log(`✅ Loaded ${products.length} products`);
 
-      setAllProducts(products);
       setFeaturedProducts(products.slice(0, 8));
 
       setLoading(false);

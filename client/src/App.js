@@ -45,14 +45,6 @@ import Debug from './pages/Debug';
 // Styles
 import './App.css';
 
-// Placeholder for PrivateRoute - assuming it will be implemented or is already elsewhere
-// For now, we'll just use the components directly as the original file doesn't have PrivateRoute
-// If PrivateRoute is intended to be added, it would need to be imported and defined.
-const PrivateRoute = ({ children }) => {
-  // In a real app, this would check for authentication
-  // For this exercise, we'll just render the children
-  return children;
-};
 
 function App() {
   return (

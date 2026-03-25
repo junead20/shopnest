@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import { FaRupeeSign, FaTruck, FaMapMarkerAlt, FaCreditCard } from 'react-icons/fa';
+import { FaTruck, FaMapMarkerAlt, FaCreditCard } from 'react-icons/fa';
 import api from '../services/api';
 import { createOrder } from '../store/slices/orderSlice';
 import { clearCart } from '../store/slices/cartSlice';

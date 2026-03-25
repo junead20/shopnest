@@ -1,6 +1,6 @@
 // client/src/pages/ApiTest.js
 import React, { useState } from 'react';
-import api from '../services/api';
+
 
 const ApiTest = () => {
   const [result, setResult] = useState(null);
@@ -69,7 +69,7 @@ const ApiTest = () => {
                 <ol className="list-decimal ml-4 mt-2 text-sm">
                   <li>Make sure backend is running: <code>cd server && npm run dev</code></li>
                   <li>Check if port 5000 is listening: <code>netstat -an | find "5000"</code></li>
-                  <li>Try accessing: <a href="http://localhost:5000/api/test" target="_blank" className="text-blue-500">http://localhost:5000/api/test</a></li>
+                  <li>Try accessing: <a href="http://localhost:5000/api/test" target="_blank" rel="noreferrer" className="text-blue-500">http://localhost:5000/api/test</a></li>
                   <li>Check Windows Firewall settings</li>
                 </ol>
               </div>
