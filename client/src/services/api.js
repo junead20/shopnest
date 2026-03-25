@@ -38,17 +38,17 @@ api.interceptors.response.use(
       url: error.config?.url
     });
 
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && error.config?.headers['x-auth-token']) {
       console.log('🔐 Unauthorized - Token expired or invalid. Logging out.');
       // Dispatch logout action to clear state and localStorage
       if (store) {
         store.dispatch(logout());
       }
 
-      // Optionally redirect to login without full page reload if using history
-      // or set a flag that the router can pick up.
-      // For now, window.location is safe but causes full reload.
-      window.location.href = '/login';
+      // Only redirect if we aren't already on the login page
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
 
     if (!error.response) {
