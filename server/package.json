@@ -1,0 +1,31 @@
+{
+  "name": "amazon-clone-backend",
+  "version": "1.0.0",
+  "description": "Amazon clone backend API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "seed": "node seedData.js",
+    "import": "node importLargeDataset.js",
+    "fix-prices": "node fixPrices.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "csv-parser": "^3.2.0",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "express-validator": "^7.0.1",
+    "jsonwebtoken": "^9.0.0",
+    "mongodb": "^5.9.2",
+    "mongoose": "^7.6.3",
+    "multer": "^1.4.5-lts.1",
+    "socket.io": "^4.8.3",
+    "stripe": "^12.18.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}
