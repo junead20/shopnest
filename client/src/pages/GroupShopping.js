@@ -13,7 +13,7 @@ const GroupShopping = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { user } = useSelector((state) => state.auth);
-    const { activeGroupName } = useSelector((state) => state.group);
+
     
     const [group, setGroup] = useState(null);
     const [loading, setLoading] = useState(true);
