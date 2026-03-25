@@ -1,7 +1,7 @@
 // client/src/pages/admin/Products.js
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { FaEdit, FaTrash, FaPlus, FaRupeeSign, FaSearch, FaArrowLeft } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaPlus, FaSearch, FaArrowLeft } from 'react-icons/fa';
 import gsap from 'gsap';
 import api from '../../services/api';
 import { formatINRSimple } from '../../utils/currency';

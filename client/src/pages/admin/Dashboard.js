@@ -9,10 +9,7 @@ import {
   FaChartLine,
   FaExclamationTriangle,
   FaCheckCircle,
-  FaClock,
-  FaTruck,
   FaPlus,
-  FaList,
   FaClipboardList
 } from 'react-icons/fa';
 import {

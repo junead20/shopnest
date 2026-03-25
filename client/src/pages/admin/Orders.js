@@ -11,12 +11,11 @@ import {
   FaSync,
   FaChevronDown,
   FaChevronUp,
-  FaSearch,
-  FaRupeeSign,
   FaShippingFast,
   FaArrowLeft,
   FaClipboardList
 } from 'react-icons/fa';
+import { useCallback } from 'react';
 import gsap from 'gsap';
 import api from '../../services/api';
 import { formatINRSimple } from '../../utils/currency';
@@ -46,29 +45,7 @@ const AdminOrders = () => {
 
   const allStatuses = ['Pending', 'Processing', 'Confirmed', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled', 'Refunded'];
 
-  useEffect(() => {
-    fetchOrders();
-  }, [page, statusFilter]);
-
-  // GSAP Effect
-  useEffect(() => {
-    if (!loading && orders.length > 0) {
-      const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
-
-      tl.fromTo(headerRef.current,
-        { y: -20, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.5 }
-      );
-
-      tl.fromTo('.order-row',
-        { x: -20, opacity: 0 },
-        { x: 0, opacity: 1, duration: 0.3, stagger: 0.04 },
-        '-=0.2'
-      );
-    }
-  }, [loading, orders]);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -87,7 +64,29 @@ const AdminOrders = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, statusFilter]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+  // GSAP Effect
+  useEffect(() => {
+    if (!loading && orders.length > 0) {
+      const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
+
+      tl.fromTo(headerRef.current,
+        { y: -20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5 }
+      );
+
+      tl.fromTo('.order-row',
+        { x: -20, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.3, stagger: 0.04 },
+        '-=0.2'
+      );
+    }
+  }, [loading, orders]);
+
 
   const handleExpandOrder = (orderId) => {
     if (expandedOrder === orderId) {

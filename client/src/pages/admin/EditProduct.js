@@ -1,7 +1,7 @@
 // client/src/pages/admin/EditProduct.js
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
-import { FaSave, FaTimes, FaPlus, FaArrowLeft, FaEdit } from 'react-icons/fa';
+import { useNavigate, useParams } from 'react-router-dom';
+import { FaSave, FaTimes, FaPlus, FaArrowLeft } from 'react-icons/fa';
 import gsap from 'gsap';
 import api from '../../services/api';
 
@@ -36,6 +36,36 @@ const EditProduct = () => {
     const formRef = useRef(null);
 
     useEffect(() => {
+        const fetchProduct = async () => {
+            try {
+                setFetching(true);
+                const { data } = await api.get(`/products/${id}`);
+                setFormData({
+                    name: data.name || '',
+                    description: data.description || '',
+                    price: data.price?.toString() || '',
+                    originalPrice: data.originalPrice?.toString() || '',
+                    category: data.category || 'Electronics',
+                    brand: data.brand || '',
+                    countInStock: data.countInStock?.toString() || '',
+                    imageUrl: data.imageUrl || '',
+                    images: data.images?.length > 0 ? data.images : [''],
+                    rating: data.rating?.toString() || '',
+                    numReviews: data.numReviews?.toString() || '',
+                    isFeatured: data.isFeatured || false,
+                    discount: data.discount?.toString() || '',
+                    tags: data.tags?.join(', ') || '',
+                    currency: data.currency || 'INR'
+                });
+                setError('');
+            } catch (err) {
+                setError('Failed to load product. It may not exist.');
+                console.error('Fetch product error:', err);
+            } finally {
+                setFetching(false);
+            }
+        };
+
         fetchProduct();
     }, [id]);
 
@@ -48,35 +78,6 @@ const EditProduct = () => {
         }
     }, [fetching]);
 
-    const fetchProduct = async () => {
-        try {
-            setFetching(true);
-            const { data } = await api.get(`/products/${id}`);
-            setFormData({
-                name: data.name || '',
-                description: data.description || '',
-                price: data.price?.toString() || '',
-                originalPrice: data.originalPrice?.toString() || '',
-                category: data.category || 'Electronics',
-                brand: data.brand || '',
-                countInStock: data.countInStock?.toString() || '',
-                imageUrl: data.imageUrl || '',
-                images: data.images?.length > 0 ? data.images : [''],
-                rating: data.rating?.toString() || '',
-                numReviews: data.numReviews?.toString() || '',
-                isFeatured: data.isFeatured || false,
-                discount: data.discount?.toString() || '',
-                tags: data.tags?.join(', ') || '',
-                currency: data.currency || 'INR'
-            });
-            setError('');
-        } catch (err) {
-            setError('Failed to load product. It may not exist.');
-            console.error('Fetch product error:', err);
-        } finally {
-            setFetching(false);
-        }
-    };
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
