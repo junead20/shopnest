@@ -11,7 +11,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000,
+  timeout: 30000,
 });
 
 api.interceptors.request.use(
@@ -53,7 +53,7 @@ api.interceptors.response.use(
 
     if (!error.response) {
       return Promise.reject({
-        message: 'Cannot connect to backend server. Make sure it\'s running on port 5000.'
+        message: 'Network error: Cannot reach the backend server. Please check your internet connection or try again in a moment.'
       });
     }
     return Promise.reject(error.response.data);
