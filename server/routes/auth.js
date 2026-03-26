@@ -84,9 +84,9 @@ router.post('/register', async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    // Create verification URL
-    const frontendUrl = process.env.FRONTEND_URL || 'https://shopnest-psi.vercel.app';
-    const verifyUrl = `${frontendUrl}/verify/${verificationToken}`;
+    // Create verification URL pointing to the backend API route
+    const backendUrl = process.env.BACKEND_URL || 'https://shopnest-api-8036.onrender.com';
+    const verifyUrl = `${backendUrl}/api/auth/verify/${verificationToken}`;
 
     const message = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
@@ -258,7 +258,7 @@ router.get('/verify/:token', async (req, res) => {
     if (existingUser) {
       // If user already exists but isn't verified, maybe they verified twice.
       // Or maybe somebody else took the email in the last 5 minutes.
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const frontendUrl = process.env.FRONTEND_URL || 'https://shopnest-psi.vercel.app';
       return res.redirect(`${frontendUrl}/login?error=Email+already+registered`);
     }
 
@@ -273,12 +273,12 @@ router.get('/verify/:token', async (req, res) => {
     await newUser.save();
 
     // Success! Redirect to login
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://shopnest-psi.vercel.app';
     res.redirect(`${frontendUrl}/login?verified=true`);
 
   } catch (error) {
     console.error('Verification error:', error);
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://shopnest-psi.vercel.app';
     
     if (error.name === 'TokenExpiredError') {
       return res.redirect(`${frontendUrl}/register?error=Verification+link+expired`);
