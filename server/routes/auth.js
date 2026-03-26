@@ -85,7 +85,7 @@ router.post('/register', async (req, res) => {
     );
 
     // Create verification URL
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://shopnest-psi.vercel.app';
     const verifyUrl = `${frontendUrl}/verify/${verificationToken}`;
 
     const message = `

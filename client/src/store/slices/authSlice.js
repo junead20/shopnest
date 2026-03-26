@@ -69,7 +69,7 @@ const authSlice = createSlice({
       })
       .addCase(register.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
+        // Do not set state.user here, the user needs to verify their email first
       })
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
