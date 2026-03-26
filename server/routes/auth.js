@@ -128,10 +128,13 @@ router.post('/register', async (req, res) => {
         verifyUrl: process.env.NODE_ENV === 'development' ? verifyUrl : null
       });
     }
-  } catch (error) {
-    console.error('Register error:', error);
-    res.status(500).json({ message: 'Server error during registration' });
-  }
+    } catch (error) {
+      console.error('Register error (outer):', error);
+      res.status(500).json({ 
+        message: error.message || 'Server error during registration',
+        detail: error.code === 11000 ? 'Email already registered' : null
+      });
+    }
 });
 
 // @route   POST /api/auth/login
