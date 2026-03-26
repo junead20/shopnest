@@ -21,14 +21,49 @@ import { formatINRSimple } from '../utils/currency';
 import { addToWishlist, removeFromWishlist, fetchWishlist } from '../store/slices/wishlistSlice';
 import { addToCart } from '../store/slices/cartSlice';
 
+// Deal configurations moved outside to prevent re-renders
+const deals = {
+  today: {
+    title: "Today's Deals",
+    icon: <FaFire className="text-2xl" />,
+    color: 'from-red-500 to-red-600',
+    description: "Electronics under ₹5000 - Limited time offers!",
+    filter: (p) => p.category === 'Electronics' && p.price < 5000
+  },
+  summer: {
+    title: 'Summer Sale',
+    icon: <FaGift className="text-2xl" />,
+    color: 'from-yellow-500 to-yellow-600',
+    description: "Fashion up to 40% off - Limited time offers!",
+    filter: (p) => p.category === 'Fashion'
+  },
+  home: {
+    title: 'Home Essentials',
+    icon: <FaTruck className="text-2xl" />,
+    color: 'from-green-500 to-green-600',
+    description: "Kitchen & Home decor - Transform your living space",
+    filter: (p) => p.category === 'Home & Kitchen'
+  },
+  freeshipping: {
+    title: 'Free Shipping',
+    icon: <FaTruck className="text-2xl" />,
+    color: 'from-blue-500 to-blue-600',
+    description: "Products with free shipping",
+    filter: (p) => p.price > 500
+  },
+  premium: {
+    title: 'Premium Offers',
+    icon: <FaCrown className="text-2xl" />,
+    color: 'from-purple-500 to-purple-600',
+    description: "Premium products at great prices",
+    filter: (p) => p.price > 5000
+  }
+};
+
 const DealsPage = () => {
   const [searchParams] = useSearchParams();
   const dispatch = useDispatch();
   const dealType = searchParams.get('type') || 'today';
-
-  // Debug logs
-  console.log('📌 DealsPage loaded with dealType:', dealType);
-  console.log('📌 Full URL:', window.location.href);
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,93 +73,9 @@ const DealsPage = () => {
   const { user } = useSelector((state) => state.auth);
   const { items: wishlistItems } = useSelector((state) => state.wishlist);
 
-  // Deal configurations
-  const deals = {
-    today: {
-      title: "Today's Deals",
-      icon: <FaFire className="text-2xl" />,
-      color: 'from-red-500 to-red-600',
-      description: "Electronics under ₹5000 - Limited time offers!",
-      filter: (p) => p.category === 'Electronics' && p.price < 5000
-    },
-    summer: {
-      title: 'Summer Sale',
-      icon: <FaGift className="text-2xl" />,
-      color: 'from-yellow-500 to-yellow-600',
-      description: "Fashion up to 40% off - Limited time offers!",
-      filter: (p) => p.category === 'Fashion'
-    },
-    home: {
-      title: 'Home Essentials',
-      icon: <FaTruck className="text-2xl" />,
-      color: 'from-green-500 to-green-600',
-      description: "Kitchen & Home decor - Transform your living space",
-      filter: (p) => p.category === 'Home & Kitchen'
-    },
-    freeshipping: {
-      title: 'Free Shipping',
-      icon: <FaTruck className="text-2xl" />,
-      color: 'from-blue-500 to-blue-600',
-      description: "Products with free shipping",
-      filter: (p) => p.price > 500
-    },
-    premium: {
-      title: 'Premium Offers',
-      icon: <FaCrown className="text-2xl" />,
-      color: 'from-purple-500 to-purple-600',
-      description: "Premium products at great prices",
-      filter: (p) => p.price > 5000
-    }
-  };
-
   const currentDeal = deals[dealType] || deals.today;
 
-  useEffect(() => {
-    console.log('🔄 Fetching all products...');
-    fetchAllProducts();
-    if (user) {
-      dispatch(fetchWishlist());
-    }
-  }, [user, dispatch]);
-
-  const filterProducts = useCallback(() => {
-    try {
-      // Filter products based on deal type
-      console.log(`🔍 Applying filter for: ${dealType}`);
-      let filtered = allProducts.filter(currentDeal.filter);
-      console.log(`📊 Found ${filtered.length} products matching filter`);
-
-      if (filtered.length === 0) {
-        console.log('⚠️ No products found for this filter. Showing random products instead.');
-        filtered = allProducts.sort(() => 0.5 - Math.random()).slice(0, 8);
-      } else {
-        filtered = filtered.sort(() => 0.5 - Math.random()).slice(0, 8);
-      }
-
-      // Add random original prices for discount display
-      filtered = filtered.map(p => ({
-        ...p,
-        originalPrice: p.price * (1.3 + (Math.random() * 0.3)),
-        discount: Math.floor(Math.random() * 30) + 20
-      }));
-
-      setProducts(filtered);
-      setLoading(false);
-    } catch (error) {
-      console.error('❌ Error filtering products:', error);
-      setError('Error filtering products');
-      setLoading(false);
-    }
-  }, [dealType, allProducts, currentDeal.filter]);
-
-  useEffect(() => {
-    if (allProducts.length > 0) {
-      console.log(`🔄 Filtering products for deal type: ${dealType}`);
-      filterProducts();
-    }
-  }, [dealType, allProducts, filterProducts]);
-
-  const fetchAllProducts = async () => {
+  const fetchAllProducts = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -137,7 +88,59 @@ const DealsPage = () => {
       setError('Failed to load products. Please try again.');
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchAllProducts();
+    if (user) {
+      dispatch(fetchWishlist());
+    }
+  }, [user, dispatch, fetchAllProducts]);
+
+  const filterProducts = useCallback(() => {
+    if (allProducts.length === 0) return;
+
+    try {
+      // Filter products based on deal type
+      console.log(`🔍 Applying filter for: ${dealType}`);
+      let filtered = allProducts.filter(currentDeal.filter);
+
+      if (filtered.length === 0) {
+        // Fallback if no products match
+        filtered = allProducts.slice(0, 8);
+      } else {
+        // Stable slice (first 8 that match)
+        filtered = filtered.slice(0, 8);
+      }
+
+      // Add deterministic original prices based on product ID to prevent flickering
+      filtered = filtered.map(p => {
+        // Use a simple seed from the ID for deterministic "random" values
+        const seed = p._id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        const discountPercent = 20 + (seed % 15); // 20-35%
+        const originalPrice = p.price / (1 - (discountPercent / 100));
+
+        return {
+          ...p,
+          originalPrice,
+          discount: discountPercent
+        };
+      });
+
+      setProducts(filtered);
+      setLoading(false);
+    } catch (error) {
+      console.error('❌ Error filtering products:', error);
+      setError('Error filtering products');
+      setLoading(false);
+    }
+  }, [dealType, allProducts, currentDeal.filter]);
+
+  useEffect(() => {
+    if (allProducts.length > 0) {
+      filterProducts();
+    }
+  }, [dealType, allProducts, filterProducts]);
 
 
 
