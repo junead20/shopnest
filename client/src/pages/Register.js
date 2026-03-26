@@ -160,6 +160,12 @@ const Register = () => {
               {errors.email && (
                 <p className="mt-1 text-sm text-red-600">{errors.email}</p>
               )}
+              {formData.email.toLowerCase().endsWith('@gmail.com') && !errors.email && (
+                <p className="mt-2 p-2 bg-blue-50 border border-blue-100 rounded text-xs text-blue-700 flex items-start gap-2 animate-pulse">
+                  <span>💡</span>
+                  <span>For your security, please use the <strong>Sign in with Google</strong> button below to instantly verify your Gmail account.</span>
+                </p>
+              )}
             </div>
 
             {/* Password Field */}

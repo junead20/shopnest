@@ -63,6 +63,14 @@ router.post('/register', async (req, res) => {
     // Block common disposable/fake domains
     const blockedDomains = ['test.com', 'example.com', 'mailinator.com', 'tempmail.com'];
     const domain = email.split('@')[1].toLowerCase();
+    
+    // Enforce Google OAuth for Gmail users to ensure validity
+    if (domain === 'gmail.com') {
+      return res.status(400).json({
+        message: 'For your security, please sign up using the "Sign in with Google" button. This ensures your Gmail account is valid and verified.'
+      });
+    }
+
     if (blockedDomains.includes(domain)) {
       return res.status(400).json({
         message: 'This email domain is not allowed. Please use a valid email service.'
