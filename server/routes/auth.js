@@ -483,5 +483,26 @@ router.post('/reset-password/:token', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+// @route   GET /api/auth/test-email
+// @desc    Test SMTP connection
+// @access  Public
+router.get('/test-email', async (req, res) => {
+  try {
+    await sendEmail({
+      email: process.env.EMAIL_USER || 'helloboss655@gmail.com',
+      subject: 'ShopNest SMTP Test',
+      html: '<h1>SMTP is working!</h1>'
+    });
+    res.json({ message: 'SMTP Test Successful! Email sent.' });
+  } catch (error) {
+    console.error('SMTP Test Error:', error);
+    res.status(500).json({ 
+      message: 'SMTP Test Failed', 
+      error: error.message,
+      code: error.code,
+      command: error.command
+    });
+  }
+});
 
 module.exports = router;
