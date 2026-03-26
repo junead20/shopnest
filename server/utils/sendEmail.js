@@ -1,38 +1,28 @@
-const nodemailer = require('nodemailer');
-const dns = require('dns');
+const axios = require('axios');
 
 const sendEmail = async (options) => {
-  // Force IPv4 DNS resolution for smtp.gmail.com
-  // Render's default DNS resolves to IPv6 which is unreachable
-  const addresses = await dns.promises.resolve4('smtp.gmail.com');
-  const gmailIPv4 = addresses[0];
+  // Use the frontend URL as the destination for the API bridge
+  // Fallback to the production Vercel URL
+  const bridgeUrl = process.env.FRONTEND_URL 
+    ? `${process.env.FRONTEND_URL}/api/sendEmail`
+    : 'https://shopnest-psi.vercel.app/api/sendEmail';
 
-  const transporter = nodemailer.createTransport({
-    host: gmailIPv4,
-    port: 465,
-    secure: true,
-    auth: {
+  try {
+    // Pass the email content AND the auth credentials safely via HTTPS POST
+    const response = await axios.post(bridgeUrl, {
+      to: options.email,
+      subject: options.subject,
+      html: options.html,
+      // Pass the environment variables from Render down to Vercel
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS
-    },
-    tls: {
-      servername: 'smtp.gmail.com', // Required for TLS when connecting by IP
-      rejectUnauthorized: true
-    },
-    connectionTimeout: 10000,
-    greetingTimeout: 5000,
-    socketTimeout: 15000
-  });
+    });
 
-  const mailOptions = {
-    from: `ShopNest <${process.env.EMAIL_USER}>`,
-    to: options.email,
-    subject: options.subject,
-    text: options.message,
-    html: options.html
-  };
-
-  await transporter.sendMail(mailOptions);
+    return response.data;
+  } catch (error) {
+    console.error('Bridge Email Error:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to send email via Vercel Bridge');
+  }
 };
 
 module.exports = sendEmail;
