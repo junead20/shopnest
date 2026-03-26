@@ -155,7 +155,11 @@ router.post('/google', async (req, res) => {
     });
 
     const payload = ticket.getPayload();
-    const { email, name, sub: googleId, picture } = payload;
+    const { email, name, sub: googleId, picture, email_verified } = payload;
+
+    if (!email_verified) {
+      return res.status(400).json({ message: 'Google email is not verified. Please verify your Google account.' });
+    }
 
     // Find or create user
     let user = await User.findOne({ email });
