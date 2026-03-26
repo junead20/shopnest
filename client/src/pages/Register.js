@@ -20,6 +20,8 @@ const Register = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user, loading, error } = useSelector((state) => state.auth);
+  const [successMsg, setSuccessMsg] = useState('');
+  const [verifyUrl, setVerifyUrl] = useState(''); // Only for dev testing
 
   useEffect(() => {
     if (user) {
@@ -84,7 +86,14 @@ const Register = () => {
     e.preventDefault();
     const newErrors = validateForm();
     if (Object.keys(newErrors).length === 0) {
-      dispatch(register(formData));
+      dispatch(register(formData)).then((result) => {
+        if (result.payload && result.payload.message) {
+          setSuccessMsg(result.payload.message);
+          if (result.payload.verifyUrl) {
+            setVerifyUrl(result.payload.verifyUrl);
+          }
+        }
+      });
     } else {
       setErrors(newErrors);
     }
@@ -108,7 +117,34 @@ const Register = () => {
           </div>
         )}
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        {successMsg ? (
+          <div className="space-y-6 text-center">
+            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-6 rounded-xl space-y-4">
+              <div className="flex justify-center">
+                <div className="h-12 w-12 rounded-full bg-green-200 flex items-center justify-center text-green-600">
+                  <FaEnvelope className="h-6 w-6" />
+                </div>
+              </div>
+              <h3 className="text-lg font-bold">Please Verify Your Email</h3>
+              <p className="text-sm">{successMsg}</p>
+            </div>
+            {verifyUrl && (
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-xs">
+                <p className="font-bold text-yellow-800 mb-2">Development Mode Only:</p>
+                <a href={verifyUrl} className="text-blue-600 underline break-all">
+                  Click here to verify (Simulated Email Link)
+                </a>
+              </div>
+            )}
+            <button
+              onClick={() => navigate('/login')}
+              className="w-full py-3 px-4 bg-yellow-500 text-white font-medium rounded-lg hover:bg-yellow-600 transition-colors"
+            >
+              Go to Login
+            </button>
+          </div>
+        ) : (
+          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             {/* Name Field */}
             <div>
@@ -283,6 +319,7 @@ const Register = () => {
             </p>
           </div>
         </form>
+        )}
       </div>
     </div>
   );

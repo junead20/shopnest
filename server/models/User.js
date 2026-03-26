@@ -57,7 +57,13 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  googleId: String
+  googleId: String,
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  verificationToken: String,
+  verificationExpire: Date
 }, {
   timestamps: true
 });

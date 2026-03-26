@@ -1,6 +1,6 @@
 // client/src/pages/Login.js
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { login } from '../store/slices/authSlice';
@@ -11,14 +11,17 @@ const Login = () => {
     email: localStorage.getItem('shouldRemember') === 'true' ? localStorage.getItem('rememberedEmail') : '',
     password: ''
   });
-  const [rememberMe, setRememberMe] = useState(localStorage.getItem('shouldRemember') === 'true');
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(localStorage.getItem('shouldRemember') === 'true');
   const [errors, setErrors] = useState({});
-  const [loginError, setLoginError] = useState('');
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, loading, error } = useSelector((state) => state.auth);
+
+  // Check for verified status from URL query params
+  const isVerified = new URLSearchParams(location.search).get('verified') === 'true';
 
   useEffect(() => {
     if (user) {
@@ -26,11 +29,7 @@ const Login = () => {
     }
   }, [user, navigate]);
 
-  useEffect(() => {
-    if (error) {
-      setLoginError(error);
-    }
-  }, [error]);
+
 
   const handleChange = (e) => {
     setFormData({
@@ -44,8 +43,6 @@ const Login = () => {
         [e.target.name]: ''
       });
     }
-    // Clear login error when user types
-    setLoginError('');
   };
 
   const validateForm = () => {
@@ -75,7 +72,7 @@ const Login = () => {
         }
         await dispatch(login(formData)).unwrap();
       } catch (err) {
-        setLoginError(err || 'Login failed. Please check your credentials.');
+        console.error('Login error:', err);
       }
     } else {
       setErrors(newErrors);
@@ -94,9 +91,16 @@ const Login = () => {
           </p>
         </div>
 
-        {loginError && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
-            {loginError}
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
+            {error}
+          </div>
+        )}
+
+        {isVerified && (
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4 flex items-center gap-2">
+            <span className="text-xl">✅</span>
+            <p className="text-sm font-medium">Email verified successfully! You can now sign in.</p>
           </div>
         )}
 

@@ -8,6 +8,7 @@ const Order = require('../models/Order');
 const Wishlist = require('../models/Wishlist');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 const { OAuth2Client } = require('google-auth-library');
+const sendEmail = require('../utils/sendEmail');
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '223325285875-lgbb4m0al60sdoc97o295j4ui69522mt.apps.googleusercontent.com';
 const client = new OAuth2Client(GOOGLE_CLIENT_ID);
@@ -92,17 +93,48 @@ router.post('/register', async (req, res) => {
 
     await user.save();
 
-    // Generate token
-    const token = generateToken(user);
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    user.verificationToken = crypto
+      .createHash('sha256')
+      .update(verificationToken)
+      .digest('hex');
 
-    res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      isAdmin: user.isAdmin,
-      profileImage: user.profileImage,
-      token
-    });
+    // Token expires in 24 hours
+    user.verificationExpire = Date.now() + 24 * 60 * 60 * 1000;
+    
+    await user.save();
+
+    // Create verification URL
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const verifyUrl = `${frontendUrl}/verify/${verificationToken}`;
+
+    const message = `
+      <h1>Confirm your ShopNest Registration</h1>
+      <p>Thank you for joining ShopNest! Please verify your email address by clicking the button below:</p>
+      <a href="${verifyUrl}" style="display: inline-block; padding: 10px 20px; background-color: #f0c14b; color: #111; text-decoration: none; border-radius: 4px; font-weight: bold;">Verify My Account</a>
+      <p>This link will expire in 24 hours.</p>
+      <p>If you did not request this, please ignore this email.</p>
+    `;
+
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: 'ShopNest Email Verification',
+        html: message
+      });
+
+      res.status(201).json({
+        message: 'Registration successful! Please check your email to verify your account.'
+      });
+    } catch (err) {
+      console.error('Error sending verification email:', err);
+      // In development, return the link so the user can still test without a working SMTP
+      res.status(201).json({
+        message: 'Registration successful, but email could not be sent. (Development only: link provided)',
+        verifyUrl: process.env.NODE_ENV === 'development' ? verifyUrl : null
+      });
+    }
   } catch (error) {
     console.error('Register error:', error);
     res.status(500).json({ message: 'Server error during registration' });
@@ -132,6 +164,11 @@ router.post('/login', async (req, res) => {
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    // Check if verified
+    if (!user.isVerified) {
+      return res.status(401).json({ message: 'Please verify your email address before logging in.' });
     }
 
     // Update last login
@@ -190,7 +227,8 @@ router.post('/google', async (req, res) => {
         password: crypto.randomBytes(16).toString('hex'), // Random password for Google users
         profileImage: picture,
         isGoogleUser: true,
-        googleId
+        googleId,
+        isVerified: true // Google accounts are already verified
       });
       await user.save();
     } else {
@@ -214,6 +252,40 @@ router.post('/google', async (req, res) => {
   } catch (error) {
     console.error('Google Login error:', error);
     res.status(500).json({ message: 'Server error during Google login' });
+  }
+});
+
+// @route   GET /api/auth/verify/:token
+// @desc    Verify email
+// @access  Public
+router.get('/verify/:token', async (req, res) => {
+  try {
+    const verificationToken = crypto
+      .createHash('sha256')
+      .update(req.params.token)
+      .digest('hex');
+
+    const user = await User.findOne({
+      verificationToken,
+      verificationExpire: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid or expired verification token' });
+    }
+
+    user.isVerified = true;
+    user.verificationToken = undefined;
+    user.verificationExpire = undefined;
+
+    await user.save();
+
+    // Redirect to frontend login page with success message
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${frontendUrl}/login?verified=true`);
+  } catch (error) {
+    console.error('Verification error:', error);
+    res.status(500).json({ message: 'Server error during verification' });
   }
 });
 
