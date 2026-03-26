@@ -2,6 +2,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { store } from './store';
 
 // Components
@@ -47,55 +48,59 @@ import './App.css';
 
 
 function App() {
+  const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID";
+
   return (
     <Provider store={store}>
-      <Router>
-        <div className="min-h-screen bg-gray-100 flex flex-col">
-          <Navbar />
-          <main className="flex-grow">
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/product/:id" element={<ProductDetails />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password/:token" element={<ResetPassword />} />
-              <Route path="/category/:categoryName" element={<CategoryPage />} />
-              <Route path="/search" element={<SearchResults />} />
-              {/* Public Group Shopping routes */}
-              <Route path="/group-shop" element={<GroupShopping />} />
-              <Route path="/group-shop/:token" element={<GroupShopping />} />
-              <Route path="/my-groups" element={<MyGroups />} />
+      <GoogleOAuthProvider clientId={googleClientId}>
+        <Router>
+          <div className="min-h-screen bg-gray-100 flex flex-col">
+            <Navbar />
+            <main className="flex-grow">
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<Home />} />
+                <Route path="/product/:id" element={<ProductDetails />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password/:token" element={<ResetPassword />} />
+                <Route path="/category/:categoryName" element={<CategoryPage />} />
+                <Route path="/search" element={<SearchResults />} />
+                {/* Public Group Shopping routes */}
+                <Route path="/group-shop" element={<GroupShopping />} />
+                <Route path="/group-shop/:token" element={<GroupShopping />} />
+                <Route path="/my-groups" element={<MyGroups />} />
 
-              {/* Deal Routes - Using DealsPage with query params */}
-              <Route path="/deals" element={<DealsPage />} />
+                {/* Deal Routes - Using DealsPage with query params */}
+                <Route path="/deals" element={<DealsPage />} />
 
-              {/* Protected Routes */}
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/wishlist" element={<Wishlist />} />
-              <Route path="/shipping" element={<Shipping />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/orders" element={<Orders />} />
-              <Route path="/order/:id" element={<OrderDetails />} />
-              <Route path="/order-success/:id" element={<OrderSuccess />} />
+                {/* Protected Routes */}
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/wishlist" element={<Wishlist />} />
+                <Route path="/shipping" element={<Shipping />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/orders" element={<Orders />} />
+                <Route path="/order/:id" element={<OrderDetails />} />
+                <Route path="/order-success/:id" element={<OrderSuccess />} />
 
-              {/* Admin Routes */}
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/products" element={<AdminProducts />} />
-              <Route path="/admin/products/add" element={<AddProduct />} />
-              <Route path="/admin/products/edit/:id" element={<EditProduct />} />
-              <Route path="/admin/orders" element={<AdminOrders />} />
+                {/* Admin Routes */}
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/products" element={<AdminProducts />} />
+                <Route path="/admin/products/add" element={<AddProduct />} />
+                <Route path="/admin/products/edit/:id" element={<EditProduct />} />
+                <Route path="/admin/orders" element={<AdminOrders />} />
 
-              {/* Debug Routes - Remove in production */}
-              <Route path="/api-test" element={<ApiTest />} />
-              <Route path="/debug" element={<Debug />} />
-            </Routes>
-          </main>
-          <Footer />
-        </div>
-      </Router>
+                {/* Debug Routes - Remove in production */}
+                <Route path="/api-test" element={<ApiTest />} />
+                <Route path="/debug" element={<Debug />} />
+              </Routes>
+            </main>
+            <Footer />
+          </div>
+        </Router>
+      </GoogleOAuthProvider>
     </Provider>
   );
 }

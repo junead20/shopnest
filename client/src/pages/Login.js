@@ -4,13 +4,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { login } from '../store/slices/authSlice';
+import GoogleAuth from '../components/GoogleAuth';
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    email: localStorage.getItem('rememberedEmail') || '',
+    email: localStorage.getItem('shouldRemember') === 'true' ? localStorage.getItem('rememberedEmail') : '',
     password: ''
   });
-  const [rememberMe, setRememberMe] = useState(!!localStorage.getItem('rememberedEmail'));
+  const [rememberMe, setRememberMe] = useState(localStorage.getItem('shouldRemember') === 'true');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [loginError, setLoginError] = useState('');
@@ -67,8 +68,10 @@ const Login = () => {
       try {
         if (rememberMe) {
           localStorage.setItem('rememberedEmail', formData.email);
+          localStorage.setItem('shouldRemember', 'true');
         } else {
           localStorage.removeItem('rememberedEmail');
+          localStorage.setItem('shouldRemember', 'false');
         }
         await dispatch(login(formData)).unwrap();
       } catch (err) {
@@ -204,6 +207,17 @@ const Login = () => {
               )}
             </button>
           </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500 uppercase">Or</span>
+            </div>
+          </div>
+
+          <GoogleAuth />
 
           <div className="text-center">
             <p className="text-sm text-gray-600">

@@ -7,6 +7,9 @@ const User = require('../models/User');
 const Order = require('../models/Order');
 const Wishlist = require('../models/Wishlist');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
+const { OAuth2Client } = require('google-auth-library');
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Generate JWT Token
 const generateToken = (user) => {
@@ -131,6 +134,64 @@ router.post('/login', async (req, res) => {
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Server error during login' });
+  }
+});
+
+// @route   POST /api/auth/google
+// @desc    Google Login
+// @access  Public
+router.post('/google', async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ message: 'Google token is required' });
+    }
+
+    // Verify token
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, sub: googleId, picture } = payload;
+
+    // Find or create user
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // Create new user if they don't exist
+      user = new User({
+        name,
+        email,
+        password: crypto.randomBytes(16).toString('hex'), // Random password for Google users
+        profileImage: picture,
+        isGoogleUser: true,
+        googleId
+      });
+      await user.save();
+    } else {
+      // Update existing user with Google info if needed
+      user.lastLogin = Date.now();
+      if (!user.profileImage) user.profileImage = picture;
+      await user.save();
+    }
+
+    // Generate token
+    const authToken = generateToken(user);
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isAdmin: user.isAdmin,
+      profileImage: user.profileImage,
+      token: authToken
+    });
+  } catch (error) {
+    console.error('Google Login error:', error);
+    res.status(500).json({ message: 'Server error during Google login' });
   }
 });
 
