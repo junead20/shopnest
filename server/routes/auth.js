@@ -115,7 +115,9 @@ router.post('/register', async (req, res) => {
       console.error('Error sending verification email:', err);
       // In production, if SMTP fails, we should let the user know and maybe try again later
       res.status(500).json({
-        message: 'Registration triggered, but we could not send the verification email to your inbox. Please contact support.'
+        message: 'Registration triggered, but we could not send the verification email to your inbox.',
+        smtpError: err.message,
+        smtpCode: err.code
       });
     }
   } catch (error) {
