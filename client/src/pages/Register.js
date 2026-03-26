@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { register } from '../store/slices/authSlice';
+import GoogleAuth from '../components/GoogleAuth';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -255,6 +256,17 @@ const Register = () => {
               )}
             </button>
           </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500 uppercase">Or</span>
+            </div>
+          </div>
+
+          <GoogleAuth />
 
           <div className="text-center">
             <p className="text-sm text-gray-600">

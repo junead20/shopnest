@@ -53,10 +53,19 @@ router.post('/register', async (req, res) => {
     }
 
     // Strict Email Format Validation
-    const strictEmailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,10}$/;
+    const strictEmailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!strictEmailRegex.test(email)) {
       return res.status(400).json({
-        message: 'Invalid email format. Please provide a valid email (e.g., user@domain.com)'
+        message: 'Invalid email format. Please provide a real email (e.g., user@gmail.com)'
+      });
+    }
+
+    // Block common disposable/fake domains
+    const blockedDomains = ['test.com', 'example.com', 'mailinator.com', 'tempmail.com'];
+    const domain = email.split('@')[1].toLowerCase();
+    if (blockedDomains.includes(domain)) {
+      return res.status(400).json({
+        message: 'This email domain is not allowed. Please use a valid email service.'
       });
     }
 
