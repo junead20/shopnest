@@ -48,7 +48,7 @@ import './App.css';
 
 
 function App() {
-  const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID";
+  const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || "223325285875-lgbb4m0al60sdoc97o295j4ui69522mt.apps.googleusercontent.com";
 
   return (
     <Provider store={store}>

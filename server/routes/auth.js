@@ -6,10 +6,8 @@ const crypto = require('crypto');
 const User = require('../models/User');
 const Order = require('../models/Order');
 const Wishlist = require('../models/Wishlist');
-const { authMiddleware, adminMiddleware } = require('../middleware/auth');
-const { OAuth2Client } = require('google-auth-library');
-
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '223325285875-lgbb4m0al60sdoc97o295j4ui69522mt.apps.googleusercontent.com';
+const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 // Generate JWT Token
 const generateToken = (user) => {
