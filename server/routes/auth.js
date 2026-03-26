@@ -77,64 +77,54 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'User already exists with this email' });
     }
 
-    // Create new user
-    user = new User({
-      name,
-      email,
-      password
-    });
-
-    await user.save();
-
-    // Generate verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    user.verificationToken = crypto
-      .createHash('sha256')
-      .update(verificationToken)
-      .digest('hex');
-
-    // Token expires in 24 hours
-    user.verificationExpire = Date.now() + 24 * 60 * 60 * 1000;
-    
-    await user.save();
+    // Create verification JWT (Zero-DB Signup)
+    const verificationToken = jwt.sign(
+      { name, email, password },
+      process.env.JWT_SECRET || 'secret',
+      { expiresIn: '24h' }
+    );
 
     // Create verification URL
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     const verifyUrl = `${frontendUrl}/verify/${verificationToken}`;
 
     const message = `
-      <h1>Confirm your ShopNest Registration</h1>
-      <p>Thank you for joining ShopNest! Please verify your email address by clicking the button below:</p>
-      <a href="${verifyUrl}" style="display: inline-block; padding: 10px 20px; background-color: #f0c14b; color: #111; text-decoration: none; border-radius: 4px; font-weight: bold;">Verify My Account</a>
-      <p>This link will expire in 24 hours.</p>
-      <p>If you did not request this, please ignore this email.</p>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+        <h1 style="color: #232f3e; text-align: center;">Welcome to ShopNest!</h1>
+        <p>You're almost there! Click the button below to verify your email and <strong>create your account</strong>:</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${verifyUrl}" style="background-color: #f0c14b; color: #111; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; border: 1px solid #a88734;">Verify My Email</a>
+        </div>
+        <p style="font-size: 12px; color: #555;">Note: Your account is NOT created yet. You must click verify to finish signup. This link expires in 24 hours.</p>
+        <hr style="border: 0; border-top: 1px solid #eee;">
+        <p style="font-size: 10px; color: #888;">If you did not request this, please ignore this email.</p>
+      </div>
     `;
 
     try {
       await sendEmail({
-        email: user.email,
-        subject: 'ShopNest Email Verification',
+        email,
+        subject: 'Confirm your ShopNest Registration',
         html: message
       });
 
       res.status(201).json({
-        message: 'Registration successful! Please check your email to verify your account.'
+        message: 'Verification email sent! Please check your inbox and click the verify button to create your account.'
       });
     } catch (err) {
       console.error('Error sending verification email:', err);
       // In development, return the link so the user can still test without a working SMTP
       res.status(201).json({
-        message: 'Registration successful, but email could not be sent. (Development only: link provided)',
+        message: 'Verification email triggered! (Development only: link provided below)',
         verifyUrl: process.env.NODE_ENV === 'development' ? verifyUrl : null
       });
     }
-    } catch (error) {
-      console.error('Register error (outer):', error);
-      res.status(500).json({ 
-        message: error.message || 'Server error during registration',
-        detail: error.code === 11000 ? 'Email already registered' : null
-      });
-    }
+  } catch (error) {
+    console.error('Register error (outer):', error);
+    res.status(500).json({ 
+      message: error.message || 'Server error during registration'
+    });
+  }
 });
 
 // @route   POST /api/auth/login
@@ -252,36 +242,48 @@ router.post('/google', async (req, res) => {
 });
 
 // @route   GET /api/auth/verify/:token
-// @desc    Verify email
+// @desc    Verify email and CREATE user
 // @access  Public
 router.get('/verify/:token', async (req, res) => {
   try {
-    const verificationToken = crypto
-      .createHash('sha256')
-      .update(req.params.token)
-      .digest('hex');
+    const token = req.params.token;
 
-    const user = await User.findOne({
-      verificationToken,
-      verificationExpire: { $gt: Date.now() }
-    });
+    // Decode the token (it contains name, email, password)
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+    const { name, email, password } = decoded;
 
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid or expired verification token' });
+    // Final check: Is the email still available?
+    let existingUser = await User.findOne({ email });
+    if (existingUser) {
+      // If user already exists but isn't verified, maybe they verified twice.
+      // Or maybe somebody else took the email in the last 5 minutes.
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      return res.redirect(`${frontendUrl}/login?error=Email+already+registered`);
     }
 
-    user.isVerified = true;
-    user.verificationToken = undefined;
-    user.verificationExpire = undefined;
+    // CREATE THE USER NOW
+    const newUser = new User({
+      name,
+      email,
+      password,
+      isVerified: true
+    });
 
-    await user.save();
+    await newUser.save();
 
-    // Redirect to frontend login page with success message
+    // Success! Redirect to login
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     res.redirect(`${frontendUrl}/login?verified=true`);
+
   } catch (error) {
     console.error('Verification error:', error);
-    res.status(500).json({ message: 'Server error during verification' });
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    
+    if (error.name === 'TokenExpiredError') {
+      return res.redirect(`${frontendUrl}/register?error=Verification+link+expired`);
+    }
+    
+    res.redirect(`${frontendUrl}/register?error=Invalid+verification+link`);
   }
 });
 
