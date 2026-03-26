@@ -113,10 +113,9 @@ router.post('/register', async (req, res) => {
       });
     } catch (err) {
       console.error('Error sending verification email:', err);
-      // In development, return the link so the user can still test without a working SMTP
-      res.status(201).json({
-        message: 'Verification email triggered! (Development only: link provided below)',
-        verifyUrl: process.env.NODE_ENV === 'development' ? verifyUrl : null
+      // In production, if SMTP fails, we should let the user know and maybe try again later
+      res.status(500).json({
+        message: 'Registration triggered, but we could not send the verification email to your inbox. Please contact support.'
       });
     }
   } catch (error) {

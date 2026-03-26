@@ -21,7 +21,6 @@ const Register = () => {
   const navigate = useNavigate();
   const { user, loading, error } = useSelector((state) => state.auth);
   const [successMsg, setSuccessMsg] = useState('');
-  const [verifyUrl, setVerifyUrl] = useState(''); // Only for dev testing
 
   useEffect(() => {
     if (user) {
@@ -89,9 +88,6 @@ const Register = () => {
       dispatch(register(formData)).then((result) => {
         if (result.payload && result.payload.message) {
           setSuccessMsg(result.payload.message);
-          if (result.payload.verifyUrl) {
-            setVerifyUrl(result.payload.verifyUrl);
-          }
         }
       });
     } else {
@@ -128,14 +124,6 @@ const Register = () => {
               <h3 className="text-lg font-bold">Please Verify Your Email</h3>
               <p className="text-sm">{successMsg}</p>
             </div>
-            {verifyUrl && (
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-xs">
-                <p className="font-bold text-yellow-800 mb-2">Development Mode Only:</p>
-                <a href={verifyUrl} className="text-blue-600 underline break-all">
-                  Click here to verify (Simulated Email Link)
-                </a>
-              </div>
-            )}
             <button
               onClick={() => navigate('/login')}
               className="w-full py-3 px-4 bg-yellow-500 text-white font-medium rounded-lg hover:bg-yellow-600 transition-colors"
