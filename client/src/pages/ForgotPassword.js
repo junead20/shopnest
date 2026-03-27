@@ -9,7 +9,6 @@ const ForgotPassword = () => {
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
     const [submitted, setSubmitted] = useState(false);
-    const [simulatedToken, setSimulatedToken] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();

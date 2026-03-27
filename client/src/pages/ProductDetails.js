@@ -32,8 +32,6 @@ const ProductDetails = () => {
 
   const { user } = useSelector((state) => state.auth);
   const { items: wishlistItems } = useSelector((state) => state.wishlist);
-
-  const { activeGroupToken, activeGroupName } = useSelector((state) => state.group);
   
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
