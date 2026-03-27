@@ -324,4 +324,69 @@ router.put('/ready', authMiddleware, async (req, res) => {
     }
 });
 
+/**
+ * @route   DELETE /api/group-cart/:token
+ * @desc    Delete the entire group cart (Admin only)
+ */
+router.delete('/:token', authMiddleware, async (req, res) => {
+    try {
+        const group = await GroupCart.findOne({ shareToken: req.params.token });
+        if (!group) return res.status(404).json({ message: 'Group not found' });
+        
+        if (group.admin.toString() !== req.user.id) {
+            return res.status(403).json({ message: 'Only the admin can delete the group' });
+        }
+
+        await GroupCart.deleteOne({ _id: group._id });
+        
+        const io = req.app.get('io');
+        if(io) io.to(req.params.token).emit('cartUpdated', { type: 'deleted' });
+
+        res.json({ message: 'Group deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting group cart' });
+    }
+});
+
+/**
+ * @route   PUT /api/group-cart/leave/:token
+ * @desc    Leave a group cart (Members only)
+ */
+router.put('/leave/:token', authMiddleware, async (req, res) => {
+    try {
+        const group = await GroupCart.findOne({ shareToken: req.params.token });
+        if (!group) return res.status(404).json({ message: 'Group not found' });
+
+        if (group.admin.toString() === req.user.id) {
+            return res.status(400).json({ message: 'Admin cannot leave the group. Delete it instead or transfer admin rights.' });
+        }
+
+        const initialLength = group.members.length;
+        group.members = group.members.filter(m => m.user.toString() !== req.user.id);
+
+        if (group.members.length === initialLength) {
+            return res.status(400).json({ message: 'You are not a member of this group.' });
+        }
+
+        // Remove votes of the leaving user
+        group.items.forEach(item => {
+            item.votes = item.votes.filter(v => v.user.toString() !== req.user.id);
+        });
+
+        // Recalculate team discount
+        if (group.members.length < 3) {
+            group.discountAmount = 0;
+        }
+
+        await group.save();
+
+        const io = req.app.get('io');
+        if(io) io.to(req.params.token).emit('cartUpdated', { type: 'memberLeft', user: req.user.name });
+
+        res.json({ message: 'Successfully left group' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error leaving group cart' });
+    }
+});
+
 module.exports = router;

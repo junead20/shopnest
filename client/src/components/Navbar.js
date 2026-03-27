@@ -19,22 +19,25 @@ import {
 import { logout } from '../store/slices/authSlice';
 import { fetchWishlist, resetWishlist } from '../store/slices/wishlistSlice';
 import { clearCart } from '../store/slices/cartSlice';
+import api from '../services/api';
 
 const Navbar = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [userGroups, setUserGroups] = useState([]);
+  const [isGroupDropdownOpen, setIsGroupDropdownOpen] = useState(false);
 
   const dropdownRef = useRef(null);
   const mobileMenuRef = useRef(null);
+  const groupDropdownRef = useRef(null);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const { user } = useSelector((state) => state.auth);
-  const { cartItems } = useSelector((state) => state.cart);
+  const { cartItems, shippingAddress } = useSelector((state) => state.cart);
   const { items: wishlistItems } = useSelector((state) => state.wishlist);
-  const { activeGroupToken, activeGroupName } = useSelector((state) => state.group);
 
   const cartItemsCount = cartItems?.reduce((acc, item) => acc + item.qty, 0) || 0;
   const wishlistCount = wishlistItems?.length || 0;
@@ -43,8 +46,6 @@ const Navbar = () => {
     'Electronics', 'Fashion', 'Home & Kitchen', 'Books',
     'Sports', 'Toys & Games'
   ];
-
-
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -55,15 +56,25 @@ const Navbar = () => {
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
         setIsMobileMenuOpen(false);
       }
+      if (groupDropdownRef.current && !groupDropdownRef.current.contains(event.target)) {
+        setIsGroupDropdownOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Fetch wishlist when user logs in
+  // Fetch wishlist and groups when user logs in
   useEffect(() => {
     if (user) {
       dispatch(fetchWishlist());
+      const fetchGroups = async () => {
+        try {
+          const { data } = await api.get('/group-cart/user/my-groups');
+          setUserGroups(data || []);
+        } catch (e) {}
+      };
+      fetchGroups();
     }
   }, [dispatch, user]);
 
@@ -95,12 +106,12 @@ const Navbar = () => {
               Shop<span className="text-yellow-500">Nest</span>
             </Link>
 
-            {/* Location - India */}
+            {/* Location */}
             <div className="hidden lg:flex items-center text-sm mr-4">
               <FaMapMarkerAlt className="mr-1 text-gray-300" />
               <div>
                 <p className="text-gray-300 text-xs">Deliver to</p>
-                <p className="font-bold text-white">India</p>
+                <p className="font-bold text-white max-w-[120px] truncate">{shippingAddress?.city || 'India'}</p>
               </div>
             </div>
 
@@ -248,16 +259,56 @@ const Navbar = () => {
                 <span className="text-xs block mt-1">Wishlist</span>
               </Link>
 
-              {/* Group Shopping */}
-              {activeGroupToken && (
-                <Link to={`/group-shop/${activeGroupToken}`} className="flex flex-col items-center group relative">
-                  <div className="bg-yellow-500 p-1.5 rounded-lg text-white group-hover:bg-yellow-600 transition-colors animate-pulse">
-                    <FaUsers size={16} />
-                  </div>
-                  <span className="text-[10px] block mt-0.5 text-yellow-500 font-bold uppercase truncate w-16 text-center">
-                    {activeGroupName || 'Active'}
-                  </span>
-                </Link>
+              {/* Group Shopping Dropdown */}
+              {user && (
+                <div className="relative group" ref={groupDropdownRef}>
+                  <button 
+                    onClick={() => setIsGroupDropdownOpen(!isGroupDropdownOpen)}
+                    className="flex flex-col items-center hover:text-yellow-500 transition-colors"
+                  >
+                    <FaUsers size={24} />
+                    <span className="text-[10px] block mt-1 font-bold">Group Shop</span>
+                  </button>
+                  
+                  {isGroupDropdownOpen && (
+                    <div className="absolute right-0 mt-3 w-72 bg-white rounded-lg shadow-2xl py-2 z-50 text-black border border-gray-100">
+                      <div className="px-4 py-3 border-b bg-gray-50 flex justify-between items-center rounded-t-lg">
+                        <span className="font-bold text-gray-800">Your Groups</span>
+                        <Link to="/group-shop" className="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs font-bold hover:bg-yellow-600 transition-colors" onClick={() => setIsGroupDropdownOpen(false)}>+ New</Link>
+                      </div>
+                      <div className="max-h-60 overflow-y-auto">
+                        {userGroups.length === 0 ? (
+                          <div className="px-4 py-8 text-sm text-gray-500 text-center">
+                            <FaUsers className="mx-auto text-3xl mb-2 opacity-20" />
+                            No active groups.
+                          </div>
+                        ) : (
+                          userGroups.slice(0, 3).map(g => (
+                            <Link 
+                              key={g._id} 
+                              to={`/group-shop/${g.shareToken}`}
+                              className="block px-4 py-3 hover:bg-yellow-50 border-b border-gray-50 transition-colors"
+                              onClick={() => setIsGroupDropdownOpen(false)}
+                            >
+                              <div className="font-bold text-gray-800 text-sm truncate">{g.name}</div>
+                              <div className="text-xs text-gray-500 flex justify-between items-center mt-1">
+                                <span>{g.members?.length || 1} Members</span>
+                                {g.status === 'ordered' ? <span className="text-green-500 font-bold">Ordered</span> : <span className="text-yellow-600 font-bold">Active</span>}
+                              </div>
+                            </Link>
+                          ))
+                        )}
+                      </div>
+                      <Link 
+                        to="/my-groups"
+                        className="block w-full text-center bg-gray-900 text-white font-bold py-3 text-sm hover:bg-black transition-colors rounded-b-lg mt-1"
+                        onClick={() => setIsGroupDropdownOpen(false)}
+                      >
+                        See All Groups Dashboard
+                      </Link>
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* Cart */}
@@ -272,13 +323,28 @@ const Navbar = () => {
               </Link>
             </div>
 
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden text-white ml-auto"
-            >
-              <FaBars size={24} />
-            </button>
+            {/* Mobile Actions (Cart & Menu) */}
+            <div className="flex lg:hidden items-center space-x-6 ml-auto">
+              {user && (
+                <Link to="/my-groups" className="text-white hover:text-yellow-500">
+                  <FaUsers size={22} />
+                </Link>
+              )}
+              <Link to="/cart" className="relative text-white hover:text-yellow-500">
+                <FaShoppingCart size={22} />
+                {cartItemsCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-yellow-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                    {cartItemsCount}
+                  </span>
+                )}
+              </Link>
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="text-white hover:text-yellow-500"
+              >
+                <FaBars size={22} />
+              </button>
+            </div>
           </div>
 
           {/* Mobile Search Bar */}

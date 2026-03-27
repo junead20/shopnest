@@ -15,7 +15,8 @@ import {
   FaShieldAlt,
   FaUndo,
   FaRupeeSign,
-  FaUsers
+  FaUsers,
+  FaTimes
 } from 'react-icons/fa';
 import { addToCart } from '../store/slices/cartSlice';
 import { addToWishlist, removeFromWishlist, fetchWishlist } from '../store/slices/wishlistSlice';
@@ -43,6 +44,9 @@ const ProductDetails = () => {
   const [addedToGroup, setAddedToGroup] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
   const [isZooming, setIsZooming] = useState(false);
+  
+  const [showGroupModal, setShowGroupModal] = useState(false);
+  const [userGroups, setUserGroups] = useState([]);
 
   const fetchProduct = useCallback(async () => {
     try {
@@ -106,25 +110,29 @@ const ProductDetails = () => {
     }
   };
 
-  const handleAddToGroup = async () => {
+  const handleAddToGroupClick = async () => {
     if (!user) {
       navigate('/login');
       return;
     }
-
-    if (!activeGroupToken) {
-      alert(`You haven't joined a Group Shop yet! Go to "Group Shop" in the menu to start one.`);
-      navigate('/group-shop');
-      return;
+    try {
+      const { data } = await api.get('/group-cart/user/my-groups');
+      setUserGroups(data || []);
+      setShowGroupModal(true);
+    } catch (e) {
+      alert('Failed to fetch your groups.');
     }
+  };
 
+  const confirmAddToGroup = async (groupToken) => {
     try {
       await api.put('/group-cart/add-item', { 
-        token: activeGroupToken, 
+        token: groupToken, 
         productId: product._id, 
         quantity 
       });
       setAddedToGroup(true);
+      setShowGroupModal(false);
       setTimeout(() => setAddedToGroup(false), 3000);
     } catch (error) {
       console.error('Error adding to group:', error);
@@ -197,6 +205,46 @@ const ProductDetails = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Group Selection Modal */}
+      {showGroupModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+              <h3 className="text-xl font-bold flex items-center gap-2">
+                <FaUsers className="text-purple-600" /> Select a Group
+              </h3>
+              <button onClick={() => setShowGroupModal(false)} className="text-gray-400 hover:text-gray-600">
+                <FaTimes size={20} />
+              </button>
+            </div>
+            <div className="max-h-80 overflow-y-auto p-4 space-y-3">
+              {userGroups.length === 0 ? (
+                <div className="text-center py-6">
+                  <p className="text-gray-500 mb-4">You haven't joined any groups yet.</p>
+                  <button onClick={() => {setShowGroupModal(false); navigate('/group-shop');}} className="bg-yellow-500 text-white px-6 py-2 rounded-lg font-bold">Create a Group</button>
+                </div>
+              ) : (
+                userGroups.map(g => (
+                  <button
+                    key={g._id}
+                    onClick={() => confirmAddToGroup(g.shareToken)}
+                    className="w-full text-left p-4 rounded-xl border border-gray-100 hover:border-purple-300 hover:bg-purple-50 transition-all flex justify-between items-center group"
+                  >
+                    <div>
+                      <div className="font-bold text-gray-800">{g.name}</div>
+                      <div className="text-sm text-gray-500">{g.members?.length || 1} Members</div>
+                    </div>
+                    <div className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-bold opacity-0 group-[&:hover]:opacity-100 transition-opacity whitespace-nowrap ml-4">
+                      Add Item
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Back Button */}
       <button
         onClick={() => navigate(-1)}
@@ -369,13 +417,13 @@ const ProductDetails = () => {
             </button>
 
             <button
-              onClick={handleAddToGroup}
+              onClick={handleAddToGroupClick}
               className={`flex-1 flex items-center justify-center gap-2 py-4 px-6 rounded-lg font-bold transition-all border-2 ${
                 addedToGroup 
                 ? 'bg-purple-600 border-purple-600 text-white' 
                 : 'bg-purple-50 border-purple-100 text-purple-600 hover:bg-purple-100'
               }`}
-              title={activeGroupToken ? `Add to ${activeGroupName}` : "Start a Group Shop"}
+              title="Start a Group Shop"
             >
               {addedToGroup ? (
                 <>

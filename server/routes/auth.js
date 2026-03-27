@@ -436,14 +436,36 @@ router.post('/forgot-password', async (req, res) => {
     // Set token expiration (1 hour)
     user.resetPasswordExpire = Date.now() + 3600000;
 
-    await user.save();
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const resetUrl = `${FRONTEND_URL}/reset-password/${resetToken}`;
 
-    // In a real app, send email here. For now, return the token in response
-    // to simulate the email verification process.
-    res.json({
-      message: 'Password reset link sent to email (Simulated)',
-      resetToken: resetToken // ONLY FOR DEMO. In production, this goes to email
-    });
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: 'ShopNest Password Reset Request',
+        html: `
+          <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px;">
+            <h1 style="color: #eab308; text-align: center;">ShopNest Password Reset</h1>
+            <p style="font-size: 16px;">Hello ${user.name || 'User'},</p>
+            <p style="font-size: 16px;">You recently requested to reset your password for your ShopNest account. Please click the button below to set a new password:</p>
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="${resetUrl}" style="display: inline-block; padding: 14px 28px; background-color: #eab308; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">Reset Your Password</a>
+            </div>
+            <p style="font-size: 14px; color: #666;">This link is valid for 1 hour. If you did not request a password reset, please ignore this email and your password will remain unchanged.</p>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+            <p style="font-size: 12px; color: #999; text-align: center;">&copy; ${new Date().getFullYear()} ShopNest. All rights reserved.</p>
+          </div>
+        `
+      });
+
+      res.json({ message: 'A password reset link has been sent to your email address. Please check your inbox.' });
+    } catch (err) {
+      console.error('Email sending error:', err);
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+      await user.save();
+      return res.status(500).json({ message: 'Email could not be sent. Please try again later.' });
+    }
   } catch (error) {
     console.error('Forgot password error:', error);
     res.status(500).json({ message: 'Server error' });

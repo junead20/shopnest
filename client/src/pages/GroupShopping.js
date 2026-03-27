@@ -158,6 +158,26 @@ const GroupShopping = () => {
         }
     };
 
+    const handleDeleteGroup = async () => {
+        if (!window.confirm('Are you sure you want to delete this group cart completely? This cannot be undone.')) return;
+        try {
+            await api.delete(`/group-cart/${token}`);
+            navigate('/group-shop');
+        } catch (error) {
+            alert('Error deleting group');
+        }
+    };
+
+    const handleLeaveGroup = async () => {
+        if (!window.confirm('Are you sure you want to leave this group?')) return;
+        try {
+            await api.put(`/group-cart/leave/${token}`);
+            navigate('/group-shop');
+        } catch (error) {
+            alert('Error leaving group');
+        }
+    };
+
     const handleReady = async () => {
         if (group?.status === 'locked') return;
         try {
@@ -245,8 +265,10 @@ const GroupShopping = () => {
         );
     }
 
+    if (!group) return null; // Safe guard against deleted group or early navigation
+
     const isMember = group?.members.some(m => m.user?._id === user._id);
-    const totalPrice = group?.items.reduce((acc, item) => acc + (item.product.price * item.quantity), 0) || 0;
+    const totalPrice = group?.items?.reduce((acc, item) => acc + ((item.product?.price || 0) * item.quantity), 0) || 0;
     const discount = (totalPrice * (group?.discountAmount || 0)) / 100;
     const finalPrice = totalPrice - discount;
 
@@ -291,6 +313,17 @@ const GroupShopping = () => {
                             </button>
                         </div>
 
+                        {/* Admin / Member Actions */}
+                        {isMember && group?.status === 'active' && (
+                            <div className="flex justify-end gap-4 mb-6 -mt-4">
+                                {group.admin === user._id ? (
+                                    <button onClick={handleDeleteGroup} className="text-sm font-bold text-red-500 hover:text-red-700 hover:underline">Delete Group</button>
+                                ) : (
+                                    <button onClick={handleLeaveGroup} className="text-sm font-bold text-red-500 hover:text-red-700 hover:underline">Leave Group</button>
+                                )}
+                            </div>
+                        )}
+
                         {!isMember && (
                             <div className="bg-yellow-50 p-4 rounded-2xl mb-6 flex items-center justify-between border border-yellow-100">
                                 <p className="text-yellow-800 font-medium">Join this shared cart to add items and vote on what to buy.</p>
@@ -307,11 +340,11 @@ const GroupShopping = () => {
                             ) : (
                                 group?.items.map((item) => (
                                     <div key={item._id} className="flex gap-4 p-4 rounded-2xl bg-gray-50 border border-gray-100 items-center">
-                                        <img src={item.product.imageUrl} alt={item.product.name} className="w-20 h-20 object-contain bg-white p-2 rounded-xl" />
+                                        <img src={item.product?.imageUrl || '/mock-shoe.jpg'} alt={item.product?.name || 'Product'} className="w-20 h-20 object-contain bg-white p-2 rounded-xl" />
                                         <div className="flex-1">
-                                            <h3 className="font-bold text-gray-800">{item.product.name}</h3>
+                                            <h3 className="font-bold text-gray-800">{item.product?.name || 'Deleted Product'}</h3>
                                             <p className="text-sm text-gray-500">Added by {item.addedBy?.name || 'Unknown'} • Qty: {item.quantity}</p>
-                                            <div className="text-lg font-bold text-gray-900">{formatINRSimple(item.product.price * item.quantity)}</div>
+                                            <div className="text-lg font-bold text-gray-900">{formatINRSimple((item.product?.price || 0) * item.quantity)}</div>
                                         </div>
                                         <div className="flex flex-col items-end gap-2">
                                             <div className="flex gap-2 bg-white rounded-full p-1 border border-gray-200">
@@ -528,10 +561,10 @@ const GroupShopping = () => {
                             {group?.members.map((m) => (
                                 <div key={m._id} className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center font-bold">
-                                        {m.user.name.charAt(0)}
+                                        {m.user?.name?.charAt(0) || 'U'}
                                     </div>
                                     <div className="flex-1">
-                                        <div className="font-semibold text-sm">{m.user.name}</div>
+                                        <div className="font-semibold text-sm">{m.user?.name || 'Unknown User'}</div>
                                         <div className="text-[10px] text-gray-500 capitalize">{m.user?._id === group.admin ? 'Admin' : 'Member'}</div>
                                     </div>
                                     <div className="flex flex-col items-end gap-1">

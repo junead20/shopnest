@@ -22,7 +22,6 @@ const ForgotPassword = () => {
         try {
             const { data } = await api.post('/auth/forgot-password', { email });
             setMessage(data.message);
-            setSimulatedToken(data.resetToken); // In production this would be in an email
             setSubmitted(true);
         } catch (err) {
             setError(err.message || 'Error occurred. Please try again.');
@@ -71,14 +70,7 @@ const ForgotPassword = () => {
                         <h3 className="text-xl font-bold text-gray-900 mb-2">Email Sent!</h3>
                         <p className="text-gray-600 mb-6">{message}</p>
 
-                        {simulatedToken && (
-                            <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100 mb-6 text-left">
-                                <p className="text-xs font-bold uppercase text-yellow-700 mb-2">Demo Simulation Mode:</p>
-                                <p className="text-sm text-gray-700 italic mb-3">Copy this token to use in the reset page:</p>
-                                <code className="block bg-white p-2 text-xs border rounded select-all font-mono break-all">{simulatedToken}</code>
-                                <Link to={`/reset-password/${simulatedToken}`} className="mt-3 block text-center text-sm font-bold text-yellow-600 hover:underline">Go to Reset Page →</Link>
-                            </div>
-                        )}
+                        <p className="text-gray-600 mb-8">{message}</p>
 
                         <Link to="/login" className="text-yellow-600 font-bold hover:underline">Back to Login</Link>
                     </div>

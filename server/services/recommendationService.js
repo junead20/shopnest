@@ -82,7 +82,7 @@ class RecommendationService {
       const freshnessSeed = Math.random().toString(36).substring(7);
 
       const prompt = `
-        As an expert shopping assistant, recommend the top 6 products from the provided list for this user.
+        You are ShopNest's expert AI shopping assistant. Recommend the top 6 best matching products from the list below based on the user's profile.
         
         USER PROFILE:
         ${userProfile}
@@ -92,13 +92,17 @@ class RecommendationService {
 
         CONTEXT FOR FRESHNESS:
         Refresh Seed: ${freshnessSeed}
-        IMPORTANT: Avoid recommending items you think might have been shown recently. Be adventurous and prioritize variety.
+        
+        CRITICAL INSTRUCTION FOR "reason": 
+        You MUST write a highly personalized, conversational sentence addressing the user directly as "you". 
+        Explicitly connect the product to their User Profile. 
+        Example: "Because you added dresses to your wishlist, you might love this stunning gown." or "Since you recently ordered running shoes, this sports bottle is a perfect match."
         
         RESPONSE FORMAT (JSON ONLY):
         [
           {
             "id": "product_mongodb_id",
-            "reason": "short explanation why this is recommended for this user"
+            "reason": "your personalized conversational message here"
           }
         ]
       `;
@@ -154,25 +158,43 @@ class RecommendationService {
       const freshnessSeed = Math.random().toString(36).substring(7);
 
       const prompt = `
-        Given the product "${currentProduct.name}" in category "${currentProduct.category}", 
-        select the top 4 most similar or complementary items from the following list.
+        You are ShopNest's expert AI shopping assistant. The user is currently viewing "${currentProduct.name}" in category "${currentProduct.category}".
+        Select the top 4 most complementary or similar items from the list below.
         
         Session Seed: ${freshnessSeed}
 
         CANDIDATES:
         ${JSON.stringify(selectedCandidates.map(p => ({ id: p._id, name: p.name, description: p.description })))}
         
+        CRITICAL INSTRUCTION FOR "reason":
+        Write a short conversational sentence addressing the user directly as "you", explaining why this pairs well with or is a good alternative to the product they are viewing.
+        Example: "Since you're looking at the ${currentProduct.name}, this makes a perfect matching accessory."
+
         RESPONSE FORMAT (JSON ONLY):
-        ["product_id1", "product_id2", ...]
+        [
+          {
+            "id": "product_mongodb_id",
+            "reason": "your personalized conversational message here"
+          }
+        ]
       `;
 
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
       let text = response.text();
       text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-      const similarIds = JSON.parse(text);
+      const recommendations = JSON.parse(text);
 
-      return Product.find({ _id: { $in: similarIds } });
+      const similarIds = recommendations.map(r => r.id);
+      const products = await Product.find({ _id: { $in: similarIds } });
+
+      return products.map(p => {
+        const rec = recommendations.find(r => r.id === p._id.toString());
+        return {
+          ...p.toObject(),
+          aiReason: rec ? rec.reason : `Great alternative to ${currentProduct.name}`
+        };
+      });
     } catch (error) {
       console.error('Error in getSimilarProducts:', error);
       // Fallback: random selection from same category
@@ -183,7 +205,10 @@ class RecommendationService {
         { $match: { _id: { $ne: p._id }, category: p.category, countInStock: { $gt: 0 } } },
         { $sample: { size: 4 } }
       ]);
-      return similarProducts;
+      return similarProducts.map(sp => ({
+        ...sp,
+        aiReason: `Customers who viewed similar items also liked this`
+      }));
     }
   }
 }
