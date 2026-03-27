@@ -120,13 +120,15 @@ const Navbar = () => {
               <select
                 className="h-10 px-3 bg-gray-200 text-black rounded-l-md text-sm border-r focus:outline-none cursor-pointer"
                 onChange={(e) => {
-                  if (e.target.value) {
+                  if (e.target.value === 'all') {
+                    navigate('/');
+                  } else if (e.target.value) {
                     navigate(`/category/${e.target.value}`);
                   }
                 }}
-                defaultValue=""
+                defaultValue="all"
               >
-                <option value="" disabled>All</option>
+                <option value="all">All</option>
                 {categories.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}

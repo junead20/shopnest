@@ -436,7 +436,7 @@ router.post('/forgot-password', async (req, res) => {
     // Set token expiration (1 hour)
     user.resetPasswordExpire = Date.now() + 3600000;
 
-    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+     const FRONTEND_URL = process.env.FRONTEND_URL || 'https://shopnest-psi.vercel.app';
     const resetUrl = `${FRONTEND_URL}/reset-password/${resetToken}`;
 
     try {
