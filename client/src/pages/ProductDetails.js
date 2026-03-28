@@ -45,6 +45,7 @@ const ProductDetails = () => {
   
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [userGroups, setUserGroups] = useState([]);
+  const [activeTab, setActiveTab] = useState('description');
 
   const fetchProduct = useCallback(async () => {
     try {
@@ -456,21 +457,123 @@ const ProductDetails = () => {
       {/* Product Details Tabs */}
       <div className="bg-white rounded-lg shadow-sm p-6 mb-12">
         <div className="border-b mb-6">
-          <div className="flex gap-8">
-            <button className="py-2 px-4 text-yellow-500 border-b-2 border-yellow-500 font-semibold">
+          <div className="flex gap-8 overflow-x-auto whitespace-nowrap scrollbar-hide">
+            <button 
+              onClick={() => setActiveTab('description')}
+              className={`py-2 px-4 font-semibold transition-all border-b-2 ${
+                activeTab === 'description' 
+                ? 'text-yellow-500 border-yellow-500' 
+                : 'text-gray-600 border-transparent hover:text-yellow-500'
+              }`}
+            >
               Description
             </button>
-            <button className="py-2 px-4 text-gray-600 hover:text-yellow-500 transition-colors">
+            <button 
+              onClick={() => setActiveTab('specifications')}
+              className={`py-2 px-4 font-semibold transition-all border-b-2 ${
+                activeTab === 'specifications' 
+                ? 'text-yellow-500 border-yellow-500' 
+                : 'text-gray-600 border-transparent hover:text-yellow-500'
+              }`}
+            >
               Specifications
             </button>
-            <button className="py-2 px-4 text-gray-600 hover:text-yellow-500 transition-colors">
+            <button 
+              onClick={() => setActiveTab('reviews')}
+              className={`py-2 px-4 font-semibold transition-all border-b-2 ${
+                activeTab === 'reviews' 
+                ? 'text-yellow-500 border-yellow-500' 
+                : 'text-gray-600 border-transparent hover:text-yellow-500'
+              }`}
+            >
               Reviews ({product.numReviews})
             </button>
           </div>
         </div>
 
-        <div className="prose max-w-none">
-          <p className="text-gray-700 leading-relaxed">{product.description}</p>
+        <div className="prose max-w-none min-h-[200px]">
+          {activeTab === 'description' && (
+            <div className="animate-fade-in">
+              <p className="text-gray-700 leading-relaxed">{product.description}</p>
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-bold mb-2">Features:</h4>
+                  <ul className="list-disc ml-5 text-sm text-gray-600 space-y-1">
+                    <li>Premium quality {product.category} product</li>
+                    <li>Ergonomic and modern design</li>
+                    <li>Highly durable materials</li>
+                    <li>Official {product.brand} warranty included</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'specifications' && (
+            <div className="animate-fade-in">
+              <div className="grid grid-cols-1 gap-4">
+                {[
+                  { label: "Brand", value: product.brand },
+                  { label: "Category", value: product.category },
+                  { label: "Model Number", value: `SN-${product._id?.substring(0, 8).toUpperCase()}` },
+                  { label: "Material", value: "Premium Composite" },
+                  { label: "Weight", value: "850g" },
+                  { label: "Dimensions", value: "24 x 18 x 5 cm" },
+                  { label: "Origin", value: "India" }
+                ].map((spec, i) => (
+                  <div key={i} className="flex border-b border-gray-100 py-3">
+                    <span className="w-1/3 text-gray-500 font-medium">{spec.label}</span>
+                    <span className="w-2/3 text-gray-800">{spec.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'reviews' && (
+            <div className="animate-fade-in space-y-6">
+              <div className="flex flex-col md:flex-row gap-8 mb-8 pb-8 border-b">
+                <div className="text-center md:text-left">
+                  <div className="text-5xl font-bold text-gray-800 mb-2">{product.rating}</div>
+                  <Rating value={product.rating} text={`${product.numReviews} Global Ratings`} size="text-lg" />
+                </div>
+                <div className="flex-1 space-y-2">
+                  {[5, 4, 3, 2, 1].map(stars => {
+                    const percent = stars === 5 ? 75 : stars === 4 ? 15 : 5;
+                    return (
+                      <div key={stars} className="flex items-center gap-4 text-sm">
+                        <span className="w-12">{stars} star</span>
+                        <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-yellow-500 rounded-full" style={{ width: `${percent}%` }}></div>
+                        </div>
+                        <span className="w-10 text-gray-500">{percent}%</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {[
+                { name: "Rahul S.", date: "March 15, 2024", rating: 5, comment: "Absolutely incredible! Exceeded all my expectations. The quality is top-notch." },
+                { name: "Priya M.", date: "February 28, 2024", rating: 4, comment: "Very good product. Delivery was fast and the packaging was robust. Highly recommended." },
+                { name: "Anish K.", date: "January 12, 2024", rating: 5, comment: "Best in class. Worth every rupee." }
+              ].map((rev, i) => (
+                <div key={i} className="border-b border-gray-50 pb-6 last:border-0">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center font-bold text-gray-500">
+                      {rev.name[0]}
+                    </div>
+                    <div>
+                      <div className="font-bold text-gray-800 text-sm">{rev.name}</div>
+                      <div className="text-xs text-gray-400">{rev.date}</div>
+                    </div>
+                  </div>
+                  <Rating value={rev.rating} size="text-xs" />
+                  <p className="mt-2 text-gray-600 italic">"{rev.comment}"</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

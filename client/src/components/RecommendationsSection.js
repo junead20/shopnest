@@ -116,9 +116,18 @@ const RecommendationsSection = ({ type = 'personalized', productId = null, title
                     <div key={product._id} className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-transparent hover:border-indigo-100 overflow-hidden flex flex-col h-full relative">
 
                         {product.aiReason && (
-                            <div className="absolute top-3 left-3 z-10 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm border border-purple-100 flex items-center gap-1.5 max-w-[80%]">
-                                <FaMagic className="text-purple-600 text-[10px]" />
-                                <span className="text-[10px] font-semibold text-purple-700 truncate">{product.aiReason}</span>
+                            <div className="absolute top-4 left-4 z-10 animate-fade-in group/ai max-w-[90%]">
+                                <div className="bg-white/95 backdrop-blur-md px-4 py-2 rounded-2xl shadow-lg border border-purple-100 flex flex-col gap-1 relative overflow-hidden group-hover:scale-105 transition-transform">
+                                    <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-purple-500 to-indigo-600"></div>
+                                    <div className="flex items-center gap-2">
+                                        <FaMagic className="text-purple-600 text-xs animate-pulse" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">AI Logic</span>
+                                    </div>
+                                    <p className="text-[11px] font-bold text-gray-800 leading-tight">
+                                        {product.aiReason}
+                                    </p>
+                                </div>
+                                <div className="w-3 h-3 bg-white rotate-45 absolute -bottom-1.5 left-4 border-r border-b border-purple-50"></div>
                             </div>
                         )}
 

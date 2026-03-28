@@ -24,38 +24,38 @@ import { addToCart } from '../store/slices/cartSlice';
 // Deal configurations moved outside to prevent re-renders
 const deals = {
   today: {
-    title: "Today's Deals",
+    title: "Flash Sale: Today's Deals",
     icon: <FaFire className="text-2xl" />,
-    color: 'from-red-500 to-red-600',
-    description: "Electronics under ₹5000 - Limited time offers!",
+    color: 'from-rose-600 via-red-500 to-orange-500',
+    description: "Incredible electronics under ₹5000",
     filter: (p) => p.category === 'Electronics' && p.price < 5000
   },
   summer: {
-    title: 'Summer Sale',
+    title: 'Sun-Kissed Summer Sale',
     icon: <FaGift className="text-2xl" />,
-    color: 'from-yellow-500 to-yellow-600',
-    description: "Fashion up to 40% off - Limited time offers!",
+    color: 'from-amber-400 via-orange-400 to-yellow-500',
+    description: "Lightweight fashion up to 40% off",
     filter: (p) => p.category === 'Fashion'
   },
   home: {
-    title: 'Home Essentials',
+    title: 'Home Luxe & Kitchen',
     icon: <FaTruck className="text-2xl" />,
-    color: 'from-green-500 to-green-600',
-    description: "Kitchen & Home decor - Transform your living space",
+    color: 'from-emerald-600 via-teal-500 to-green-500',
+    description: "Transform your living space with premium decor",
     filter: (p) => p.category === 'Home & Kitchen'
   },
   freeshipping: {
-    title: 'Free Shipping',
+    title: 'Free Worldwide Shipping',
     icon: <FaTruck className="text-2xl" />,
-    color: 'from-blue-500 to-blue-600',
-    description: "Products with free shipping",
+    color: 'from-sky-500 via-blue-500 to-indigo-500',
+    description: "Any product above ₹500 delivered free!",
     filter: (p) => p.price > 500
   },
   premium: {
-    title: 'Premium Offers',
+    title: 'The Premium Anthology',
     icon: <FaCrown className="text-2xl" />,
-    color: 'from-purple-500 to-purple-600',
-    description: "Premium products at great prices",
+    color: 'from-indigo-700 via-purple-700 to-fuchsia-800',
+    description: "Exquisite luxury items at exceptional value",
     filter: (p) => p.price > 5000
   }
 };
