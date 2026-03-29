@@ -39,8 +39,8 @@ const OrderSuccess = () => {
                 </div>
                 
                 <div ref={textRef} className="mb-10">
-                    <h1 className="text-4xl font-black text-gray-900 mb-4">Order Placed!</h1>
-                    <p className="text-gray-500 text-lg">Thank you for shopping with ShopNest. Your order is being processed.</p>
+                    <h1 className="text-5xl font-black text-gray-900 mb-4 tracking-tighter">Payment Successful!</h1>
+                    <p className="text-gray-500 text-lg font-medium">Your order has been confirmed and is now being prepared for shipment.</p>
                 </div>
 
                 <div ref={cardRef} className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 mb-8 transform">

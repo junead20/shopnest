@@ -150,6 +150,23 @@ orderSchema.methods.updateStatus = function(newStatus, userId, note = '') {
     note: note
   });
   
+  // Auto-generate tracking number for Shipped status
+  if (newStatus === 'Shipped' && !this.trackingNumber) {
+    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let randomId = '';
+    for (let i = 0; i < 6; i++) {
+        randomId += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    this.trackingNumber = `SN-TRK-${randomId}`;
+    
+    // Set default estimated delivery (7 days from shipping)
+    if (!this.estimatedDelivery) {
+        const deliveryDate = new Date();
+        deliveryDate.setDate(deliveryDate.getDate() + 7);
+        this.estimatedDelivery = deliveryDate;
+    }
+  }
+
   // Update specific status flags
   if (newStatus === 'Delivered') {
     this.isDelivered = true;

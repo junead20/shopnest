@@ -213,32 +213,69 @@ const OrderDetails = () => {
             </div>
           </div>
 
-          {/* Status History */}
+          {/* Order Timeline */}
           {order.statusHistory && order.statusHistory.length > 0 && (
-            <div className="bg-white rounded-lg shadow-lg p-6 mt-6">
-              <h2 className="text-xl font-bold mb-4">Order Timeline</h2>
-              <div className="space-y-3">
-                {order.statusHistory.map((history, index) => (
-                  <div key={index} className="flex gap-3">
-                    <div className="flex flex-col items-center">
-                      <div className={`w-3 h-3 rounded-full ${
-                        index === 0 ? 'bg-yellow-500' : 'bg-gray-300'
-                      }`}></div>
-                      {index < order.statusHistory.length - 1 && (
-                        <div className="w-0.5 h-full bg-gray-300"></div>
-                      )}
-                    </div>
-                    <div className="flex-1 pb-3">
-                      <p className="font-semibold">{history.status}</p>
-                      <p className="text-sm text-gray-600">
-                        {formatDate(history.updatedAt)}
-                      </p>
-                      {history.note && (
-                        <p className="text-sm text-gray-500 mt-1">{history.note}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
+            <div className="bg-white rounded-[2.5rem] shadow-2xl p-10 mt-10 border border-gray-50 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-50 rounded-full -mr-16 -mt-16 opacity-50"></div>
+              
+              <h2 className="text-3xl font-black text-gray-900 mb-10 flex items-center gap-4">
+                <div className="w-2 h-8 bg-yellow-500 rounded-full"></div>
+                Order Journey
+              </h2>
+
+              <div className="relative">
+                {/* Vertical Line */}
+                <div className="absolute left-6 top-2 bottom-2 w-0.5 bg-gray-100"></div>
+
+                <div className="space-y-12">
+                  {[...order.statusHistory].reverse().map((history, index) => {
+                    const isLatest = index === 0;
+                    return (
+                      <div key={index} className="flex gap-10 relative group">
+                        {/* Dot / Icon container */}
+                        <div className={`relative z-10 flex items-center justify-center w-12 h-12 rounded-2xl shadow-lg transition-all duration-500 ${
+                          isLatest ? 'bg-yellow-500 scale-110 ring-8 ring-yellow-50' : 'bg-white border-2 border-gray-100 scale-100'
+                        }`}>
+                          {history.status === 'Delivered' ? (
+                            <FaCheckCircle className={isLatest ? 'text-white' : 'text-green-500'} />
+                          ) : history.status === 'Shipped' || history.status === 'Out for Delivery' ? (
+                            <FaTruck className={isLatest ? 'text-white' : 'text-blue-500'} />
+                          ) : history.status === 'Cancelled' ? (
+                            <FaTimesCircle className={isLatest ? 'text-white' : 'text-red-500'} />
+                          ) : (
+                            <FaBox className={isLatest ? 'text-white' : 'text-yellow-600'} />
+                          )}
+                        </div>
+
+                        {/* Content */}
+                        <div className={`flex-1 pt-1 transition-all duration-300 ${isLatest ? 'opacity-100 translate-x-0' : 'opacity-60 hover:opacity-100'}`}>
+                          <div className="flex items-center gap-3 mb-1">
+                            <h3 className={`text-xl font-black ${isLatest ? 'text-gray-900' : 'text-gray-500'}`}>
+                              {history.status}
+                            </h3>
+                            {isLatest && (
+                              <span className="bg-green-100 text-green-700 text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full">
+                                Latest
+                              </span>
+                            )}
+                          </div>
+                          
+                          <p className="text-gray-400 font-bold text-xs uppercase tracking-tight mb-2">
+                            {formatDate(history.updatedAt)}
+                          </p>
+                          
+                          {history.note && (
+                            <div className={`p-4 rounded-2xl text-sm font-medium ${
+                                isLatest ? 'bg-gray-50 text-gray-700 border border-gray-100' : 'text-gray-400 italic'
+                            }`}>
+                              {history.note}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}
