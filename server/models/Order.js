@@ -48,7 +48,7 @@ const orderSchema = new mongoose.Schema({
   paymentMethod: {
     type: String,
     required: [true, 'Payment method is required'],
-    enum: ['Stripe', 'Razorpay', 'Cash on Delivery']
+    enum: ['Stripe', 'Razorpay', 'Cash on Delivery', 'Direct UPI QR', 'Razorpay UPI/QR']
   },
   paymentResult: {
     id: String,
