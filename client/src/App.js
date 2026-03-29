@@ -47,16 +47,19 @@ import Debug from './pages/Debug';
 import './App.css';
 
 
+import { ToastProvider } from './context/ToastContext';
+
 function App() {
   const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || "223325285875-lgbb4m0al60sdoc97o295j4ui69522mt.apps.googleusercontent.com";
 
   return (
     <Provider store={store}>
-      <GoogleOAuthProvider clientId={googleClientId}>
-        <Router>
-          <div className="min-h-screen bg-gray-100 flex flex-col">
-            <Navbar />
-            <main className="flex-grow">
+      <ToastProvider>
+        <GoogleOAuthProvider clientId={googleClientId}>
+          <Router>
+            <div className="min-h-screen bg-gray-100 flex flex-col">
+              <Navbar />
+              <main className="flex-grow">
               <Routes>
                 {/* Public Routes */}
                 <Route path="/" element={<Home />} />
@@ -100,7 +103,8 @@ function App() {
             <Footer />
           </div>
         </Router>
-      </GoogleOAuthProvider>
+        </GoogleOAuthProvider>
+      </ToastProvider>
     </Provider>
   );
 }

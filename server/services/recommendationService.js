@@ -15,7 +15,8 @@ class RecommendationService {
    */
   async _getUserInterestProfile(userId) {
     try {
-      const [orders, wishlist] = await Promise.all([
+      const [user, orders, wishlist] = await Promise.all([
+        require('../models/User').findById(userId),
         Order.find({ user: userId }).populate('orderItems.product'),
         Wishlist.findOne({ user: userId }).populate('items.product')
       ]);
@@ -46,13 +47,21 @@ class RecommendationService {
         });
       }
 
-      const profile = `User is interested in categories: ${Array.from(new Set([...interests.categories, ...interests.wishlistedCategories])).join(', ')}. 
-        Products previously interacted with: ${interests.prevProducts.slice(-10).join(', ')}.`;
+      const categoryCounts = {};
+      interests.categories.forEach(cat => categoryCounts[cat] = (categoryCounts[cat] || 0) + 1);
+      interests.wishlistedCategories.forEach(cat => categoryCounts[cat] = (categoryCounts[cat] || 0) + 1);
+      
+      const favoriteCategory = Object.keys(categoryCounts).reduce((a, b) => categoryCounts[a] > categoryCounts[b] ? a : b, 'General');
+      const latestItem = interests.prevProducts[interests.prevProducts.length - 1] || 'none';
+
+      const profile = `The user's name is ${user?.name || 'Friend'}. 
+        They are a sophisticated shopper who gravitates towards ${favoriteCategory}. 
+        They recently explored "${latestItem}" and have a history with ${Array.from(interests.categories).join(', ')}.`;
 
       return profile;
     } catch (error) {
       console.error('Error in _getUserInterestProfile:', error);
-      return "General shopper";
+      return "A valued ShopNest customer";
     }
   }
 
@@ -63,11 +72,8 @@ class RecommendationService {
     try {
       const userProfile = await this._getUserInterestProfile(userId);
 
-      // Fetch a larger pool of items and shuffle them for freshness
       const allProducts = await Product.find({ countInStock: { $gt: 0 } }).limit(150);
       const shuffledProducts = allProducts.sort(() => 0.5 - Math.random());
-
-      // Send a random subset of 40 products to the AI
       const candidateSubset = shuffledProducts.slice(0, 40);
 
       const productList = candidateSubset.map(p => ({
@@ -75,34 +81,34 @@ class RecommendationService {
         name: p.name,
         category: p.category,
         brand: p.brand,
-        price: p.price
+        price: p.price,
+        description: p.description
       }));
 
-      // Add a random "freshness seed" to ensure the AI doesn't pick the same things every time
       const freshnessSeed = Math.random().toString(36).substring(7);
 
       const prompt = `
-        You are ShopNest's expert AI shopping assistant. Recommend the top 6 best matching products from the list below based on the user's profile.
+        You are ShopNest's Lead Personal Stylist. You are speaking directly to your VIP client.
         
-        USER PROFILE:
+        USER CONTEXT:
         ${userProfile}
         
-        PRODUCT LIST:
+        YOUR CURATED COLLECTION:
         ${JSON.stringify(productList)}
 
-        CONTEXT FOR FRESHNESS:
-        Refresh Seed: ${freshnessSeed}
+        SESSION TOKEN: ${freshnessSeed}
         
-        CRITICAL INSTRUCTION FOR "reason": 
-        You MUST write a highly personalized, conversational sentence addressing the user directly as "you". 
-        Explicitly connect the product to their User Profile. 
-        Example: "Because you added dresses to your wishlist, you might love this stunning gown." or "Since you recently ordered running shoes, this sports bottle is a perfect match."
+        STRICT STYLIST PROTOCOL:
+        1. NO ROBOTIC TEMPLATES. Do NOT start sentences with "Because you liked" or "Since you bought".
+        2. BE HUMAN & REALISTIC. Talk like a person who has seen these items. Mention details like "this silhouette," "the craft," or "its versatility."
+        3. VARIETY IS KEY. Every single recommendation reason must have a unique sentence structure.
+        4. WARM AUTHORITATIVE TONE. You are an expert advisor. Use phrases like "I caught a glimpse of your style...", "I've been thinking about what would complete your collection...", "This piece caught my eye for you specifically because...".
         
         RESPONSE FORMAT (JSON ONLY):
         [
           {
             "id": "product_mongodb_id",
-            "reason": "your personalized conversational message here"
+            "reason": "your unique, human stylist note"
           }
         ]
       `;
@@ -110,8 +116,6 @@ class RecommendationService {
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
       let text = response.text();
-
-      // Clean JSON in case AI adds markdown
       text = text.replace(/```json/g, '').replace(/```/g, '').trim();
       const recommendations = JSON.parse(text);
 
@@ -122,16 +126,15 @@ class RecommendationService {
         const rec = recommendations.find(r => r.id === p._id.toString());
         return {
           ...p.toObject(),
-          aiReason: rec ? rec.reason : "Based on your behavior"
+          aiReason: rec ? rec.reason : "I chose this specifically for you after looking at your favorite collections."
         };
       });
     } catch (error) {
       console.error('Error in getPersonalizedRecommendations:', error);
-      // Fallback: return any random selection of 6 products
       const products = await Product.aggregate([{ $sample: { size: 6 } }]);
       return products.map(p => ({
         ...p,
-        aiReason: "You might like these popular picks"
+        aiReason: "I’m still learning your taste, but something tells me you’ll really appreciate the quality of this selection."
       }));
     }
   }
@@ -144,37 +147,32 @@ class RecommendationService {
       const currentProduct = await Product.findById(productId);
       if (!currentProduct) return [];
 
-      // Fetch a broader set of potential similar items
       const candidateProducts = await Product.find({
         _id: { $ne: productId },
         category: currentProduct.category,
         countInStock: { $gt: 0 }
       }).limit(50);
 
-      // Shuffle and pick a smaller set for the AI to analyze deeply
       const shuffledCandidates = candidateProducts.sort(() => 0.5 - Math.random());
       const selectedCandidates = shuffledCandidates.slice(0, 20);
-
       const freshnessSeed = Math.random().toString(36).substring(7);
 
       const prompt = `
-        You are ShopNest's expert AI shopping assistant. The user is currently viewing "${currentProduct.name}" in category "${currentProduct.category}".
-        Select the top 4 most complementary or similar items from the list below.
+        You are ShopNest's Expert Advisor. Your client is admiring the "${currentProduct.name}".
+        Find 4 items from the list below that would either pair beautifully with it or provide a sophisticated alternative.
         
-        Session Seed: ${freshnessSeed}
-
         CANDIDATES:
         ${JSON.stringify(selectedCandidates.map(p => ({ id: p._id, name: p.name, description: p.description })))}
         
-        CRITICAL INSTRUCTION FOR "reason":
-        Write a short conversational sentence addressing the user directly as "you", explaining why this pairs well with or is a good alternative to the product they are viewing.
-        Example: "Since you're looking at the ${currentProduct.name}, this makes a perfect matching accessory."
-
+        PROTOCOL:
+        Stay human. Explain the relationship between the items. 
+        Example: "I recommended this because it shares the same minimalist ethos as the item you're viewing." or "If you loved the texture of that, you'll find this experience very similar."
+        
         RESPONSE FORMAT (JSON ONLY):
         [
           {
             "id": "product_mongodb_id",
-            "reason": "your personalized conversational message here"
+            "reason": "your thoughtful stylist note"
           }
         ]
       `;
@@ -192,12 +190,11 @@ class RecommendationService {
         const rec = recommendations.find(r => r.id === p._id.toString());
         return {
           ...p.toObject(),
-          aiReason: rec ? rec.reason : `Great alternative to ${currentProduct.name}`
+          aiReason: rec ? rec.reason : "I think this would be a wonderful companion piece to what you're seeing right now."
         };
       });
     } catch (error) {
       console.error('Error in getSimilarProducts:', error);
-      // Fallback: random selection from same category
       const p = await Product.findById(productId);
       if (!p) return [];
 
@@ -207,7 +204,7 @@ class RecommendationService {
       ]);
       return similarProducts.map(sp => ({
         ...sp,
-        aiReason: `Customers who viewed similar items also liked this`
+        aiReason: `I noticed this pairs beautifully with what you're currently viewing!`
       }));
     }
   }

@@ -5,6 +5,7 @@ import { FaEdit, FaTrash, FaPlus, FaSearch, FaArrowLeft } from 'react-icons/fa';
 import gsap from 'gsap';
 import api from '../../services/api';
 import { formatINRSimple } from '../../utils/currency';
+import { useToast } from '../../context/ToastContext';
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -12,6 +13,7 @@ const Products = () => {
   const [deleteLoading, setDeleteLoading] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');
+  const { showToast } = useToast();
   const headerRef = useRef(null);
   const tableRef = useRef(null);
 
@@ -70,7 +72,7 @@ const Products = () => {
         fetchProducts();
       }
     } catch (error) {
-      alert(`❌ Error: ${error.message || 'Failed to delete product'}`);
+      showToast(`Delete failed: ${error.message || 'The server encountered an issue.'}`, 'error');
       console.error('Error deleting product:', error);
     } finally {
       setDeleteLoading(null);

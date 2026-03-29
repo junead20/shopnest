@@ -24,11 +24,13 @@ import api from '../services/api';
 import ProductImage from '../components/ProductImage';
 import RecommendationsSection from '../components/RecommendationsSection';
 import { ProductDetailsSkeleton } from '../components/Skeleton';
+import { useToast } from '../context/ToastContext';
 
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { showToast } = useToast();
 
   const { user } = useSelector((state) => state.auth);
   const { items: wishlistItems } = useSelector((state) => state.wishlist);
@@ -119,7 +121,7 @@ const ProductDetails = () => {
       setUserGroups(data || []);
       setShowGroupModal(true);
     } catch (e) {
-      alert('Failed to fetch your groups.');
+      showToast('We encountered a slight issue fetching your groups. Please try again.', 'error');
     }
   };
 
@@ -135,7 +137,7 @@ const ProductDetails = () => {
       setTimeout(() => setAddedToGroup(false), 3000);
     } catch (error) {
       console.error('Error adding to group:', error);
-      alert('Failed to add to group. Session might have ended.');
+      showToast('I couldn’t add this to your group right now. Your session may have timed out.', 'error');
     }
   };
 

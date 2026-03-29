@@ -91,6 +91,12 @@ router.get('/:token', authMiddleware, async (req, res) => {
             .populate('items.votes.user', 'name');
 
         if (!group) return res.status(404).json({ message: 'Group not found' });
+        
+        // Filter out members whose user was deleted (populated as null)
+        if (group.members) {
+            group.members = group.members.filter(m => m.user !== null);
+        }
+        
         res.json(group);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching group cart' });

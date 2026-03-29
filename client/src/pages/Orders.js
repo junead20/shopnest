@@ -148,16 +148,18 @@ const Orders = () => {
               <div className="space-y-3">
                 {order.orderItems.slice(0, 2).map((item, idx) => (
                   <div key={idx} className="flex items-center gap-4">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-16 h-16 object-cover rounded"
-                      onError={(e) => e.target.src = 'https://via.placeholder.com/64'}
-                    />
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{item.name}</h3>
-                      <p className="text-sm text-gray-600">Quantity: {item.qty}</p>
-                    </div>
+                    <Link to={`/product/${item.product}`} className="group flex items-center gap-4 hover:bg-gray-50 p-2 rounded-xl transition-all">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-16 h-16 object-cover rounded group-hover:scale-105 transition-transform"
+                        onError={(e) => e.target.src = 'https://via.placeholder.com/64'}
+                      />
+                      <div className="flex-1">
+                        <h3 className="font-semibold group-hover:text-yellow-600 transition-colors">{item.name}</h3>
+                        <p className="text-sm text-gray-600">Quantity: {item.qty}</p>
+                      </div>
+                    </Link>
                     <p className="font-semibold text-yellow-600">
                       {formatINR(item.price * item.qty)}
                     </p>

@@ -84,7 +84,15 @@ const Checkout = () => {
             // Success! Clear cart and navigate
             dispatch(clearCart());
             setVerifying(false);
-            navigate(`/order-success/${order._id}`);
+            
+            // Critical: Scroll to top before navigation for better visibility
+            window.scrollTo(0, 0);
+            
+            if (order && order._id) {
+                navigate(`/order-success/${order._id}`, { replace: true });
+            } else {
+                navigate('/orders');
+            }
 
         } catch (err) {
             console.error('Checkout Error:', err);

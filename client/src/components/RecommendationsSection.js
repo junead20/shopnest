@@ -6,11 +6,13 @@ import api from '../services/api';
 import { formatINRSimple } from '../utils/currency';
 import { addToCart } from '../store/slices/cartSlice';
 import { addToWishlist, removeFromWishlist, fetchWishlist } from '../store/slices/wishlistSlice';
+import { useToast } from '../context/ToastContext';
 
-const RecommendationsSection = ({ type = 'personalized', productId = null, title = 'Recommended for You' }) => {
+const RecommendationsSection = ({ type = 'personalized', productId = null, title = 'Handpicked For Your Style' }) => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const dispatch = useDispatch();
+    const { showToast } = useToast();
     const { user } = useSelector((state) => state.auth);
     const { items: wishlistItems } = useSelector((state) => state.wishlist);
 
@@ -47,7 +49,7 @@ const RecommendationsSection = ({ type = 'personalized', productId = null, title
         e.preventDefault();
         e.stopPropagation();
         if (!user) {
-            alert('Please login to add items to cart');
+            showToast('Please login to continue curation of your cart.', 'info');
             return;
         }
         dispatch(addToCart({
@@ -57,14 +59,14 @@ const RecommendationsSection = ({ type = 'personalized', productId = null, title
             image: product.imageUrl,
             qty: 1,
         }));
-        alert('✅ Added to cart!');
+        showToast('I’ve successfully added that piece to your cart!', 'magic');
     };
 
     const handleWishlistToggle = async (product, e) => {
         e.preventDefault();
         e.stopPropagation();
         if (!user) {
-            alert('Please login to add items to wishlist');
+            showToast('Please login to curate items in your wishlist.', 'info');
             return;
         }
         const isInWishlist = wishlistItems?.some(item => (item.product?._id || item.product) === product._id);
@@ -105,8 +107,8 @@ const RecommendationsSection = ({ type = 'personalized', productId = null, title
                         <FaMagic className="text-white text-xl animate-pulse" />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
-                        <p className="text-sm text-indigo-600 font-medium">Powered by ShopNest AI</p>
+                        <h2 className="text-2xl font-black text-slate-900 tracking-tight">{title}</h2>
+                        <p className="text-sm text-indigo-600 font-bold italic">Curated by your AI Stylist ✨</p>
                     </div>
                 </div>
             </div>
@@ -114,22 +116,6 @@ const RecommendationsSection = ({ type = 'personalized', productId = null, title
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                 {products.map((product) => (
                     <div key={product._id} className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-transparent hover:border-indigo-100 overflow-hidden flex flex-col h-full relative">
-
-                        {product.aiReason && (
-                            <div className="absolute top-4 left-4 z-10 animate-fade-in group/ai max-w-[90%]">
-                                <div className="bg-white/95 backdrop-blur-md px-4 py-2 rounded-2xl shadow-lg border border-purple-100 flex flex-col gap-1 relative overflow-hidden group-hover:scale-105 transition-transform">
-                                    <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-purple-500 to-indigo-600"></div>
-                                    <div className="flex items-center gap-2">
-                                        <FaMagic className="text-purple-600 text-xs animate-pulse" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">AI Logic</span>
-                                    </div>
-                                    <p className="text-[11px] font-bold text-gray-800 leading-tight">
-                                        {product.aiReason}
-                                    </p>
-                                </div>
-                                <div className="w-3 h-3 bg-white rotate-45 absolute -bottom-1.5 left-4 border-r border-b border-purple-50"></div>
-                            </div>
-                        )}
 
                         <button
                             onClick={(e) => handleWishlistToggle(product, e)}
@@ -160,7 +146,7 @@ const RecommendationsSection = ({ type = 'personalized', productId = null, title
                                 </h3>
                             </Link>
 
-                            <div className="flex items-center gap-1 mb-4">
+                            <div className="flex items-center gap-1 mb-2">
                                 <div className="flex text-yellow-400 text-xs">
                                     {Array.from({ length: 5 }).map((_, i) => (
                                         i < Math.floor(product.rating) ? <FaStar key={i} /> : <FaRegStar key={i} />
@@ -169,15 +155,26 @@ const RecommendationsSection = ({ type = 'personalized', productId = null, title
                                 <span className="text-[11px] text-gray-400 font-medium">({product.numReviews})</span>
                             </div>
 
+                            <div className="mb-4 p-4 bg-slate-50 rounded-2xl border border-slate-100 relative overflow-hidden group/ai min-h-[100px] flex flex-col justify-center">
+                                <div className="absolute top-0 left-0 w-1 h-full bg-indigo-600"></div>
+                                <div className="flex items-center gap-2 mb-2">
+                                    <FaMagic className="text-indigo-600 text-[10px]" />
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">A Stylist's Note</span>
+                                </div>
+                                <p className="text-[12px] font-medium text-slate-700 leading-relaxed italic tracking-wide">
+                                    "{product.aiReason || "I've specially selected this piece for you, thinking it perfectly complements your unique style."}"
+                                </p>
+                            </div>
+
                             <div className="mt-auto flex items-center justify-between">
                                 <div>
                                     <span className="text-2xl font-black text-gray-900">{formatINRSimple(product.price)}</span>
                                 </div>
                                 <button
                                     onClick={(e) => handleAddToCart(product, e)}
-                                    className="bg-gray-900 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-indigo-600 transform hover:-translate-y-0.5 transition-all shadow-md hover:shadow-indigo-200"
+                                    className="bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-indigo-600 transform hover:-translate-y-0.5 transition-all shadow-md hover:shadow-indigo-200"
                                 >
-                                    Buy Now
+                                    Explore Piece
                                 </button>
                             </div>
                         </div>

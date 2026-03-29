@@ -4,9 +4,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { FaSave, FaTimes, FaPlus, FaArrowLeft } from 'react-icons/fa';
 import gsap from 'gsap';
 import api from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 
 const EditProduct = () => {
     const navigate = useNavigate();
+    const { showToast } = useToast();
     const { id } = useParams();
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(true);
@@ -144,7 +146,7 @@ const EditProduct = () => {
                 duration: 0.4,
                 onComplete: () => {
                     setLoading(false);
-                    alert('✅ Product updated successfully!');
+                    showToast('The product information has been successfully updated.', 'success');
                     navigate('/admin/products');
                 }
             });

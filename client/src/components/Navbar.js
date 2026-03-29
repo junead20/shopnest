@@ -27,6 +27,63 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [userGroups, setUserGroups] = useState([]);
   const [isGroupDropdownOpen, setIsGroupDropdownOpen] = useState(false);
+  
+  // Custom Location Dropdown
+  const [isLocationOpen, setIsLocationOpen] = useState(false);
+  const [selectedCity, setSelectedCity] = useState(localStorage.getItem('shopnest_city') || 'India');
+  const [citySearch, setCitySearch] = useState('');
+  const locationRef = useRef(null);
+
+  const majorCities = [
+    // Maharashtra
+    'Mumbai', 'Pune', 'Nagpur', 'Thane', 'Nashik', 'Aurangabad', 'Solapur',
+    // Delhi
+    'Delhi', 'New Delhi', 'Gurgaon', 'Noida',
+    // Karnataka
+    'Bangalore', 'Mysore', 'Hubli', 'Dharwad', 'Belgaum',
+    // Telangana
+    'Hyderabad', 'Warangal', 'Nizamabad',
+    // Gujarat
+    'Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Bhavnagar',
+    // Tamil Nadu
+    'Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli', 'Salem',
+    // West Bengal
+    'Kolkata', 'Howrah', 'Durgapur', 'Asansol',
+    // Rajasthan
+    'Jaipur', 'Jodhpur', 'Kota', 'Bikaner', 'Ajmer',
+    // Uttar Pradesh
+    'Lucknow', 'Kanpur', 'Ghaziabad', 'Agra', 'Varanasi', 'Meerut', 'Prayagraj', 'Bareilly',
+    // Madhya Pradesh
+    'Indore', 'Bhopal', 'Jabalpur', 'Gwalior',
+    // Andhra Pradesh
+    'Visakhapatnam', 'Vijayawada', 'Guntur', 'Nellore',
+    // Bihar
+    'Patna', 'Gaya', 'Bhagalpur',
+    // Punjab
+    'Ludhiana', 'Amritsar', 'Jalandhar', 'Patiala',
+    // Haryana
+    'Faridabad', 'Panipat', 'Ambala',
+    // Kerala
+    'Kochi', 'Thiruvananthapuram', 'Kozhikode', 'Thrissur',
+    // Odisha
+    'Bhubaneswar', 'Cuttack', 'Rourkela',
+    // Assam
+    'Guwahati',
+    // Chhattisgarh
+    'Raipur', 'Bhilai',
+    // Jharkhand
+    'Ranchi', 'Dhanbad', 'Jamshedpur',
+    // Uttarakhand
+    'Dehradun',
+    // Jammu & Kashmir
+    'Srinagar', 'Jammu',
+    // Himachal Pradesh
+    'Shimla',
+    // Goa
+    'Panaji',
+    // Others
+    'Chandigarh', 'Puducherry', 'Port Blair', 'Gangtok', 'Shillong', 'Imphal', 'Kohima', 'Agartala'
+  ].sort();
 
   const dropdownRef = useRef(null);
   const mobileMenuRef = useRef(null);
@@ -59,10 +116,21 @@ const Navbar = () => {
       if (groupDropdownRef.current && !groupDropdownRef.current.contains(event.target)) {
         setIsGroupDropdownOpen(false);
       }
+      if (locationRef.current && !locationRef.current.contains(event.target)) {
+        setIsLocationOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Sync Location with Shipping Address
+  useEffect(() => {
+    if (shippingAddress?.city) {
+      setSelectedCity(shippingAddress.city);
+      localStorage.setItem('shopnest_city', shippingAddress.city);
+    }
+  }, [shippingAddress]);
 
   // Fetch wishlist and groups when user logs in
   useEffect(() => {
@@ -106,13 +174,57 @@ const Navbar = () => {
               Shop<span className="text-yellow-500">Nest</span>
             </Link>
 
-            {/* Location */}
-            <div className="hidden lg:flex items-center text-sm mr-4">
-              <FaMapMarkerAlt className="mr-1 text-gray-300" />
-              <div>
-                <p className="text-gray-300 text-xs">Deliver to</p>
-                <p className="font-bold text-white max-w-[120px] truncate">{shippingAddress?.city || 'India'}</p>
-              </div>
+            {/* Location Dropdown */}
+            <div className="hidden lg:relative lg:flex items-center text-sm mr-4" ref={locationRef}>
+              <button 
+                onClick={() => setIsLocationOpen(!isLocationOpen)}
+                className="flex items-center group cursor-pointer hover:ring-1 hover:ring-white p-1 rounded transition-all"
+              >
+                <FaMapMarkerAlt className="mr-1 text-gray-300 group-hover:text-yellow-500" />
+                <div className="text-left">
+                  <p className="text-gray-300 text-[10px] leading-tight font-bold uppercase tracking-widest">Deliver to</p>
+                  <p className="font-bold text-white max-w-[120px] truncate leading-tight flex items-center">
+                    {selectedCity}
+                    <FaAngleDown className="ml-1 text-[8px] opacity-50" />
+                  </p>
+                </div>
+              </button>
+
+              {isLocationOpen && (
+                <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-2xl z-[100] border border-gray-100 p-4 text-black animate-fade-in">
+                  <div className="mb-4">
+                    <p className="text-sm font-black text-gray-900 mb-2">Choose your location</p>
+                    <div className="relative">
+                      <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs" />
+                      <input 
+                        type="text" 
+                        placeholder="Search city..." 
+                        className="w-full pl-8 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs font-bold focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                        value={citySearch}
+                        onChange={(e) => setCitySearch(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="max-h-60 overflow-y-auto space-y-1 custom-scrollbar">
+                    {majorCities.filter(city => city.toLowerCase().includes(citySearch.toLowerCase())).map(city => (
+                      <button 
+                        key={city}
+                        onClick={() => {
+                          setSelectedCity(city);
+                          localStorage.setItem('shopnest_city', city);
+                          setIsLocationOpen(false);
+                          setCitySearch('');
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
+                          selectedCity === city ? 'bg-yellow-500 text-white shadow-lg' : 'text-gray-600 hover:bg-gray-50'
+                        }`}
+                      >
+                        {city}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Category Dropdown */}

@@ -19,8 +19,10 @@ import { useCallback } from 'react';
 import gsap from 'gsap';
 import api from '../../services/api';
 import { formatINRSimple } from '../../utils/currency';
+import { useToast } from '../../context/ToastContext';
 
 const AdminOrders = () => {
+  const { showToast } = useToast();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -125,7 +127,7 @@ const AdminOrders = () => {
         estimatedDelivery: shippingForm.estimatedDelivery || undefined
       });
 
-      alert('✅ Order updated successfully!');
+      showToast('Order details have been updated successfully.', 'success');
 
       // Animate collapse before fetching
       gsap.to(`.expanded-content-${orderId}`, {
@@ -137,7 +139,7 @@ const AdminOrders = () => {
       });
 
     } catch (err) {
-      alert(`❌ Error: ${err.message || 'Failed to update order'}`);
+      showToast(`Update failed: ${err.message || 'The server encountered an issue.'}`, 'error');
       console.error('Update order error:', err);
     } finally {
       setUpdatingOrder(null);

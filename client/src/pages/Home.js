@@ -25,9 +25,11 @@ import { ProductCardSkeleton } from '../components/Skeleton';
 import { formatINRSimple } from '../utils/currency';
 import { addToWishlist, removeFromWishlist, fetchWishlist } from '../store/slices/wishlistSlice';
 import { addToCart } from '../store/slices/cartSlice';
+import { useToast } from '../context/ToastContext';
 
 const Home = () => {
   const dispatch = useDispatch();
+  const { showToast } = useToast();
 
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -103,7 +105,7 @@ const Home = () => {
     e.stopPropagation();
 
     if (!user) {
-      alert('Please login to add items to wishlist');
+      showToast('Please login to add items to your wishlist', 'info');
       return;
     }
 
@@ -129,7 +131,7 @@ const Home = () => {
     e.stopPropagation();
 
     if (!user) {
-      alert('Please login to add items to cart');
+      showToast('Please login to add items to your cart', 'info');
       return;
     }
 
@@ -141,7 +143,7 @@ const Home = () => {
       qty: 1,
     }));
 
-    alert('✅ Added to cart!');
+    showToast('Item successfully added to your cart!', 'success');
   };
 
   const isProductInWishlist = (productId) => {
@@ -227,85 +229,75 @@ const Home = () => {
   );
 
 
+  const slides = [
+    {
+      title: "Today's Deals",
+      subtitle: "Electronics under ₹5000",
+      image: "https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&q=80&w=1600&h=600",
+      cta: "Shop Deals",
+      onClick: handleTodayClick
+    },
+    {
+      title: "Summer Sale",
+      subtitle: "Fashion up to 40% off",
+      image: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&q=80&w=1600&h=600",
+      cta: "Shop Fashion",
+      onClick: handleSummerClick
+    },
+    {
+      title: "Home Essentials",
+      subtitle: "Kitchen & Home Decor",
+      image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=1600&h=600",
+      cta: "Shop Home",
+      onClick: handleHomeClick
+    }
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [slides.length]);
+
   return (
     <div className="bg-gray-100 min-h-screen">
-      {/* Hero Carousel - DIRECT BUTTONS - NO ARRAYS */}
+      {/* Hero Carousel */}
       <div className="relative w-full h-[400px] overflow-hidden">
-        {/* Slide 1 - Today's Deals */}
-        <div
-          onClick={handleTodayClick}
-          className="absolute w-full h-full transition-opacity duration-1000 cursor-pointer opacity-100"
-          style={{ zIndex: currentSlide === 0 ? 10 : 0, opacity: currentSlide === 0 ? 1 : 0 }}
-        >
-          <img
-            src="https://images.pexels.com/photos/3945667/pexels-photo-3945667.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-            alt="Today's Deals"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
-            <div className="text-center text-white">
-              <h2 className="text-4xl font-bold mb-2">Today's Deals</h2>
-              <p className="text-xl mb-4">Electronics under ₹5000</p>
-              <span className="bg-yellow-500 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-yellow-600 inline-block">
-                Shop Deals
-              </span>
+        {slides.map((slide, index) => (
+          <div
+            key={index}
+            onClick={slide.onClick}
+            className={`absolute w-full h-full transition-all duration-1000 cursor-pointer ${
+              index === currentSlide ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-105 z-0'
+            }`}
+          >
+            <img
+              src={slide.image}
+              alt={slide.title}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+              <div className="text-center text-white">
+                <h2 className="text-4xl font-bold mb-2">{slide.title}</h2>
+                <p className="text-xl mb-4">{slide.subtitle}</p>
+                <span className="bg-yellow-500 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-yellow-600 inline-block">
+                  {slide.cta}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Slide 2 - Summer Sale */}
-        <div
-          onClick={handleSummerClick}
-          className="absolute w-full h-full transition-opacity duration-1000 cursor-pointer"
-          style={{ zIndex: currentSlide === 1 ? 10 : 0, opacity: currentSlide === 1 ? 1 : 0 }}
-        >
-          <img
-            src="https://images.pexels.com/photos/2983464/pexels-photo-2983464.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-            alt="Summer Sale"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
-            <div className="text-center text-white">
-              <h2 className="text-4xl font-bold mb-2">Summer Sale</h2>
-              <p className="text-xl mb-4">Fashion up to 40% off</p>
-              <span className="bg-yellow-500 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-yellow-600 inline-block">
-                Shop Fashion
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Slide 3 - Home Essentials */}
-        <div
-          onClick={handleHomeClick}
-          className="absolute w-full h-full transition-opacity duration-1000 cursor-pointer"
-          style={{ zIndex: currentSlide === 2 ? 10 : 0, opacity: currentSlide === 2 ? 1 : 0 }}
-        >
-          <img
-            src="https://images.pexels.com/photos/276528/pexels-photo-276528.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-            alt="Home Essentials"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
-            <div className="text-center text-white">
-              <h2 className="text-4xl font-bold mb-2">Home Essentials</h2>
-              <p className="text-xl mb-4">Kitchen & Home decor</p>
-              <span className="bg-yellow-500 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-yellow-600 inline-block">
-                Shop Home
-              </span>
-            </div>
-          </div>
-        </div>
+        ))}
 
         {/* Carousel Controls */}
         <button
-          onClick={() => setCurrentSlide((prev) => (prev - 1 + 3) % 3)}
+          onClick={() => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)}
           className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-75 transition-all z-20"
         >
           <FaChevronLeft size={24} />
         </button>
         <button
-          onClick={() => setCurrentSlide((prev) => (prev + 1) % 3)}
+          onClick={() => setCurrentSlide((prev) => (prev + 1) % slides.length)}
           className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-75 transition-all z-20"
         >
           <FaChevronRight size={24} />
@@ -313,12 +305,13 @@ const Home = () => {
 
         {/* Carousel Indicators */}
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-20">
-          {[0, 1, 2].map((index) => (
+          {slides.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all ${index === currentSlide ? 'bg-yellow-500 w-8' : 'bg-white'
-                }`}
+              className={`w-3 h-3 rounded-full transition-all ${
+                index === currentSlide ? 'bg-yellow-500 w-8' : 'bg-white'
+              }`}
             />
           ))}
         </div>
@@ -369,17 +362,17 @@ const Home = () => {
         </div>
 
         {user ? (
-          <RecommendationsSection type="personalized" title="Recommended for You" />
+          <RecommendationsSection type="personalized" title="Handpicked Gems Just for You" />
         ) : (
-          <div className="mb-12 bg-gradient-to-r from-yellow-50 to-orange-50 p-8 rounded-3xl border border-yellow-100 flex items-center justify-between">
+          <div className="mb-12 bg-gradient-to-r from-purple-50 to-indigo-50 p-8 rounded-3xl border border-purple-100 flex items-center justify-between shadow-sm">
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2 flex items-center gap-2">
-                <FaMagic className="text-yellow-500" /> Unlock Personalized Recommendations
+              <h2 className="text-2xl font-black text-slate-800 mb-2 flex items-center gap-2 tracking-tight">
+                <FaMagic className="text-indigo-500 animate-pulse" /> Want your own Personal Stylist?
               </h2>
-              <p className="text-gray-600">Sign in to see products picked just for you by our AI assistant.</p>
+              <p className="text-slate-600 font-medium italic">Join us to unlock a curated selection of products handpicked specifically for your unique style.</p>
             </div>
-            <Link to="/login" className="bg-yellow-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-yellow-600 transition-all shadow-lg hover:shadow-yellow-200">
-              Sign In Now
+            <Link to="/login" className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:shadow-lg hover:scale-105 transition-all shadow-md">
+              Start My Style Journey
             </Link>
           </div>
         )}

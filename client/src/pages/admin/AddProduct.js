@@ -4,9 +4,11 @@ import { useNavigate, Link } from 'react-router-dom';
 import { FaSave, FaTimes, FaPlus, FaArrowLeft } from 'react-icons/fa';
 import gsap from 'gsap';
 import api from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 
 const AddProduct = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
@@ -104,7 +106,7 @@ const AddProduct = () => {
         duration: 0.4,
         onComplete: () => {
           setLoading(false);
-          alert('✅ Product created successfully!');
+          showToast('Success! The new piece has been added to our collection.', 'success');
           navigate('/admin/products');
         }
       });

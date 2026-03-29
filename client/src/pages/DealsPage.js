@@ -20,49 +20,51 @@ import api from '../services/api';
 import { formatINRSimple } from '../utils/currency';
 import { addToWishlist, removeFromWishlist, fetchWishlist } from '../store/slices/wishlistSlice';
 import { addToCart } from '../store/slices/cartSlice';
+import { useToast } from '../context/ToastContext';
 
 // Deal configurations moved outside to prevent re-renders
 const deals = {
   today: {
-    title: "Flash Sale: Today's Deals",
-    icon: <FaFire className="text-2xl" />,
-    color: 'from-rose-600 via-red-500 to-orange-500',
-    description: "Incredible electronics under ₹5000",
+    title: "Todays Deals",
+    icon: <FaFire className="text-2xl text-white" />,
+    color: 'from-slate-800 to-slate-900',
+    description: "Top Essentials at Best Prices",
     filter: (p) => p.category === 'Electronics' && p.price < 5000
   },
   summer: {
-    title: 'Sun-Kissed Summer Sale',
-    icon: <FaGift className="text-2xl" />,
-    color: 'from-amber-400 via-orange-400 to-yellow-500',
-    description: "Lightweight fashion up to 40% off",
+    title: 'Summer Sale',
+    icon: <FaGift className="text-2xl text-white" />,
+    color: 'from-orange-500 to-amber-600',
+    description: "Lightweight fashion for the season",
     filter: (p) => p.category === 'Fashion'
   },
   home: {
-    title: 'Home Luxe & Kitchen',
-    icon: <FaTruck className="text-2xl" />,
-    color: 'from-emerald-600 via-teal-500 to-green-500',
-    description: "Transform your living space with premium decor",
+    title: 'Home and Kitchen',
+    icon: <FaTruck className="text-2xl text-white" />,
+    color: 'from-emerald-600 to-teal-700',
+    description: "Transform your living space",
     filter: (p) => p.category === 'Home & Kitchen'
   },
   freeshipping: {
-    title: 'Free Worldwide Shipping',
-    icon: <FaTruck className="text-2xl" />,
-    color: 'from-sky-500 via-blue-500 to-indigo-500',
+    title: 'Free Shipping',
+    icon: <FaTruck className="text-2xl text-white" />,
+    color: 'from-sky-600 to-indigo-600',
     description: "Any product above ₹500 delivered free!",
     filter: (p) => p.price > 500
   },
   premium: {
-    title: 'The Premium Anthology',
-    icon: <FaCrown className="text-2xl" />,
-    color: 'from-indigo-700 via-purple-700 to-fuchsia-800',
-    description: "Exquisite luxury items at exceptional value",
+    title: 'Premium Offers',
+    icon: <FaCrown className="text-2xl text-white" />,
+    color: 'from-rose-600 to-purple-800',
+    description: "Exquisite items at exceptional value",
     filter: (p) => p.price > 5000
   }
 };
 
 const DealsPage = () => {
-  const [searchParams] = useSearchParams();
   const dispatch = useDispatch();
+  const { showToast } = useToast();
+  const [searchParams] = useSearchParams();
   const dealType = searchParams.get('type') || 'today';
 
   const [products, setProducts] = useState([]);
@@ -149,7 +151,7 @@ const DealsPage = () => {
     e.stopPropagation();
 
     if (!user) {
-      alert('Please login to add items to wishlist');
+      showToast('Please login to continue saving your favorite pieces.', 'info');
       return;
     }
 
@@ -177,7 +179,7 @@ const DealsPage = () => {
     e.stopPropagation();
 
     if (!user) {
-      alert('Please login to add items to cart');
+      showToast('Please login to add your selection to the cart.', 'info');
       return;
     }
 
@@ -189,7 +191,7 @@ const DealsPage = () => {
       qty: 1,
     }));
 
-    alert('✅ Added to cart!');
+    showToast('I’ve added that item to your cart. Ready when you are!', 'success');
   };
 
   const isProductInWishlist = (productId) => {
@@ -261,14 +263,14 @@ const DealsPage = () => {
       </div>
 
       {/* Deal Header */}
-      <div className={`bg-gradient-to-r ${currentDeal.color} text-white py-12`}>
+      <div className={`bg-gradient-to-r ${currentDeal.color} text-white py-12 shadow-inner`}>
         <div className="container mx-auto px-4">
           <div className="flex items-center gap-4">
-            <div className="text-5xl">{currentDeal.icon}</div>
+            <div className="text-5xl drop-shadow-lg">{currentDeal.icon}</div>
             <div>
-              <h1 className="text-4xl font-bold">{currentDeal.title}</h1>
-              <p className="text-xl opacity-90 mt-2">{currentDeal.description}</p>
-              <p className="text-sm opacity-75 mt-1">Deal Type: {dealType}</p>
+              <h1 className="text-4xl font-black tracking-tighter uppercase drop-shadow-md">{currentDeal.title}</h1>
+              <p className="text-xl text-white/90 font-medium mt-2 drop-shadow-sm">{currentDeal.description}</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 mt-2">Active Category: {dealType}</p>
             </div>
           </div>
         </div>
@@ -325,7 +327,7 @@ const DealsPage = () => {
 
                   <div className="p-4 flex flex-col flex-grow">
                     <Link to={`/product/${product._id}`}>
-                      <h3 className="font-semibold mb-1 hover:text-yellow-600 line-clamp-2 text-sm">
+                      <h3 className="font-semibold mb-1 hover:text-sage-700 line-clamp-2 text-sm text-slate-800">
                         {product.name}
                       </h3>
                     </Link>
@@ -333,19 +335,19 @@ const DealsPage = () => {
                     <Rating value={product.rating} count={product.numReviews} />
 
                     <div className="mt-2 flex items-baseline gap-2">
-                      <span className="text-2xl font-bold text-yellow-600">
+                      <span className="text-2xl font-bold text-slate-900">
                         {formatINRSimple(product.price)}
                       </span>
-                      <span className="text-sm text-gray-400 line-through">
+                      <span className="text-sm text-slate-400 line-through">
                         {formatINRSimple(product.originalPrice)}
                       </span>
-                      <span className="text-xs bg-red-500 text-white px-1 py-0.5 rounded">
+                      <span className="text-xs bg-rose-100 text-rose-700 px-1 py-0.5 rounded">
                         -{Math.round(product.discount)}%
                       </span>
                     </div>
 
-                    <p className="text-green-600 text-xs mt-1">You save: {formatINRSimple(product.originalPrice - product.price)}</p>
-                    <p className="text-green-600 font-semibold text-xs mt-1">In Stock</p>
+                    <p className="text-sage-700 text-xs mt-1">You save: {formatINRSimple(product.originalPrice - product.price)}</p>
+                    <p className="text-sage-600 font-semibold text-xs mt-1">In Stock</p>
 
                     <button
                       onClick={(e) => handleAddToCart(product, e)}

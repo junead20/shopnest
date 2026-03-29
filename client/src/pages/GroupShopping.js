@@ -7,11 +7,13 @@ import { io } from 'socket.io-client';
 import api from '../services/api';
 import { formatINRSimple } from '../utils/currency';
 import { setActiveGroup } from '../store/slices/groupSlice';
+import { useToast } from '../context/ToastContext';
 
 const GroupShopping = () => {
     const { token } = useParams();
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const { showToast } = useToast();
     const { user } = useSelector((state) => state.auth);
 
     
@@ -35,7 +37,7 @@ const GroupShopping = () => {
             dispatch(setActiveGroup({ token: data.shareToken, name: data.name }));
         } catch (error) {
             console.error('Error fetching group:', error);
-            alert('Failed to load group. Link might be invalid.');
+            showToast('Failed to load group. The link might be expired or invalid.', 'error');
             navigate('/group-shop');
         } finally {
             setLoading(false);
@@ -91,7 +93,7 @@ const GroupShopping = () => {
         } catch (error) {
             console.error('Error creating group:', error);
             const msg = typeof error === 'string' ? error : (error.message || error.error || JSON.stringify(error));
-            alert(`Error creating group: ${msg}`);
+            showToast(`We encountered an error creating your group: ${msg}`, 'error');
         }
     };
 
@@ -100,7 +102,7 @@ const GroupShopping = () => {
         try {
             await api.put('/group-cart/lock', { token });
         } catch (error) {
-            alert(`Error locking cart: ${error.message || 'Unknown error'}`);
+            showToast(`Unable to lock the cart: ${error.message || 'Unknown error'}`, 'error');
         }
     };
 
@@ -110,7 +112,7 @@ const GroupShopping = () => {
         } catch (error) {
             console.error('Unlock error:', error);
             const msg = typeof error === 'string' ? error : (error.message || error.error || JSON.stringify(error));
-            alert(`Error unlocking cart: ${msg}`);
+            showToast(`Unable to unlock the cart: ${msg}`, 'error');
         }
     };
 
@@ -119,12 +121,15 @@ const GroupShopping = () => {
             await api.post(`/group-cart/join/${token}`);
             fetchGroup();
         } catch (error) {
-            alert('Error joining group');
+            showToast('Unable to join this group. Please try refreshed link.', 'error');
         }
     };
 
     const handleVote = async (productId, vote) => {
-        if (group?.status === 'locked') return alert('Cart is locked for checkout!');
+        if (group?.status === 'locked') {
+            showToast('The cart is currently locked for checkout. No modifications allowed.', 'info');
+            return;
+        }
         try {
             await api.put('/group-cart/vote', { token, productId, vote });
             fetchGroup();
@@ -135,7 +140,8 @@ const GroupShopping = () => {
 
     const handlePlaceOrder = async () => {
         if (!shippingInfo.fullName || !shippingInfo.address || !shippingInfo.phoneNumber) {
-            return alert('Please fill in all shipping details.');
+            showToast('Please provide all the necessary shipping details before placing the order.', 'info');
+            return;
         }
 
         try {
@@ -148,11 +154,11 @@ const GroupShopping = () => {
                 },
                 paymentMethod
             });
-            alert('Order placed successfully!');
+            showToast('Fantastic! Your group order has been successfully placed.', 'success');
             navigate(`/order-success/${data._id}`);
         } catch (error) {
             console.error('Error placing order:', error);
-            alert('Failed to place order. Please try again.');
+            showToast('Failed to place your group order. Please check your details and try again.', 'error');
         } finally {
             setPlacingOrder(false);
         }
@@ -164,7 +170,7 @@ const GroupShopping = () => {
             await api.delete(`/group-cart/${token}`);
             navigate('/group-shop');
         } catch (error) {
-            alert('Error deleting group');
+            showToast('Error occurred while deleting the group.', 'error');
         }
     };
 
@@ -174,7 +180,7 @@ const GroupShopping = () => {
             await api.put(`/group-cart/leave/${token}`);
             navigate('/group-shop');
         } catch (error) {
-            alert('Error leaving group');
+            showToast('Error occurred while leaving the group.', 'error');
         }
     };
 

@@ -1,7 +1,9 @@
 import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
+import { useToast } from '../context/ToastContext';
 
 const GoogleAuth = () => {
+  const { showToast } = useToast();
 
   const handleSuccess = async (response) => {
     try {
@@ -24,13 +26,13 @@ const GoogleAuth = () => {
       window.location.href = '/'; 
     } catch (error) {
        console.error('Google Auth Error:', error.response?.data?.message || error.message);
-       alert('Google Authentication Failed. Please try again.');
+       showToast('Google Authentication encountered a hitch. Please try again.', 'error');
     }
   };
 
   const handleError = () => {
     console.error('Google Login Failed');
-    alert('Google Login Failed. Please try again.');
+    showToast('Secure Google Login was unsuccessful. Please try again.', 'error');
   };
 
   return (

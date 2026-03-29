@@ -16,10 +16,12 @@ import {
 } from 'react-icons/fa';
 import api from '../services/api';
 import { formatINR } from '../utils/currency';
+import { useToast } from '../context/ToastContext';
 
 const OrderDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -58,7 +60,7 @@ const OrderDetails = () => {
       await fetchOrder();
     } catch (err) {
       console.error('Cancel order error:', err);
-      alert('Failed to cancel order. Please try again.');
+      showToast('We were unable to cancel the order. Please try again or contact support.', 'error');
     } finally {
       setCancelling(false);
     }

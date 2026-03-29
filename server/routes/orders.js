@@ -65,6 +65,46 @@ router.post('/', authMiddleware, async (req, res) => {
 
     const createdOrder = await order.save();
 
+    // Sync address to User Profile
+    try {
+      const user = await User.findById(req.user.id);
+      if (user) {
+        // Update Phone Number
+        if (shippingAddress.phoneNumber) {
+          user.phoneNumber = shippingAddress.phoneNumber;
+        }
+
+        // Deduplicate and Add Address
+        const sameAddressIndex = user.addresses.findIndex(addr => 
+          addr.street === shippingAddress.address && 
+          addr.city === shippingAddress.city && 
+          addr.zipCode === shippingAddress.zipCode
+        );
+
+        // Unset previous defaults
+        user.addresses.forEach(addr => addr.isDefault = false);
+
+        if (sameAddressIndex !== -1) {
+          // Update existing
+          user.addresses[sameAddressIndex].isDefault = true;
+        } else {
+          // Add new
+          user.addresses.push({
+            street: shippingAddress.address,
+            city: shippingAddress.city,
+            state: shippingAddress.state,
+            zipCode: shippingAddress.zipCode,
+            country: shippingAddress.country || 'India',
+            isDefault: true
+          });
+        }
+        await user.save();
+      }
+    } catch (userUpdateErr) {
+      console.error('Failed to sync address to profile:', userUpdateErr);
+      // Don't fail the order if profile sync fails
+    }
+
     // Update product stock
     for (const item of orderItems) {
       await Product.findByIdAndUpdate(item.product, {

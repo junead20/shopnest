@@ -16,11 +16,13 @@ import api from '../services/api';
 import { formatINRSimple } from '../utils/currency';
 import { addToWishlist, removeFromWishlist, fetchWishlist } from '../store/slices/wishlistSlice';
 import { addToCart } from '../store/slices/cartSlice';
+import { useToast } from '../context/ToastContext';
 
 const CategoryPage = () => {
   const { categoryName } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { showToast } = useToast();
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -116,7 +118,7 @@ const CategoryPage = () => {
       qty: 1,
     }));
 
-    alert('Added to cart!');
+    showToast('Success! Your item is now in the cart.', 'success');
   };
 
   const isProductInWishlist = (productId) => {
