@@ -14,6 +14,7 @@ const wishlistRoutes = require('./routes/wishlist');
 const paymentRoutes = require('./routes/payment');
 const recommendationRoutes = require('./routes/recommendations');
 const groupCartRoutes = require('./routes/groupCart');
+const razorpayRoutes = require('./routes/razorpay');
 
 const app = express();
 const server = http.createServer(app);
@@ -92,6 +93,7 @@ app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/group-cart', groupCartRoutes);
+app.use('/api/payment/razorpay', razorpayRoutes);
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
