@@ -18,7 +18,9 @@ router.post('/', authMiddleware, async (req, res) => {
       itemsPrice,
       taxPrice,
       shippingPrice,
-      totalPrice
+      totalPrice,
+      isPaid,
+      paymentResult
     } = req.body;
 
     if (!orderItems || orderItems.length === 0) {
@@ -49,12 +51,15 @@ router.post('/', authMiddleware, async (req, res) => {
       shippingPrice,
       totalPrice,
       currency: 'INR',
-      status: 'Pending',
+      isPaid: isPaid || false,
+      paidAt: isPaid ? new Date() : null,
+      paymentResult: paymentResult || null,
+      status: isPaid ? 'Confirmed' : 'Pending',
       statusHistory: [{
-        status: 'Pending',
+        status: isPaid ? 'Confirmed' : 'Pending',
         updatedAt: new Date(),
         updatedBy: req.user.id,
-        note: 'Order placed successfully'
+        note: isPaid ? 'Order placed and paid via Direct UPI QR' : 'Order placed successfully'
       }]
     });
 
