@@ -27,7 +27,13 @@ const allowedOrigins = [
 
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
   }
@@ -37,21 +43,21 @@ const io = new Server(server, {
 app.set('io', io);
 
 io.on('connection', (socket) => {
-  console.log('👤 A user connected:', socket.id);
-
+  console.log('👤 Socket connected:', socket.id);
   socket.on('joinGroup', (token) => {
     socket.join(token);
-    console.log(`🏠 User ${socket.id} joined group: ${token}`);
-  });
-
-  socket.on('disconnect', () => {
-    console.log('👤 User disconnected');
   });
 });
 
-// CORS setup
+// CORS setup with regex support for Vercel subdomains
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 
