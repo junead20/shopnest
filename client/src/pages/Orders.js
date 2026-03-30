@@ -148,7 +148,7 @@ const Orders = () => {
               <div className="space-y-3">
                 {order.orderItems.slice(0, 2).map((item, idx) => (
                   <div key={idx} className="flex items-center gap-4">
-                    <Link to={`/product/${item.product}`} className="group flex items-center gap-4 hover:bg-gray-50 p-2 rounded-xl transition-all">
+                    <Link to={`/product/${item.product?._id || item.product}`} className="group flex items-center gap-4 hover:bg-gray-50 p-2 rounded-xl transition-all">
                       <img
                         src={item.image}
                         alt={item.name}

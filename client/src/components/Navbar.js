@@ -36,54 +36,54 @@ const Navbar = () => {
 
   const majorCities = [
     // Maharashtra
-    'Mumbai', 'Pune', 'Nagpur', 'Thane', 'Nashik', 'Aurangabad', 'Solapur',
+    'Mumbai', 'Pune', 'Nagpur', 'Thane', 'Nashik', 'Aurangabad', 'Solapur', 'Amravati', 'Nanded', 'Kolhapur',
     // Delhi
-    'Delhi', 'New Delhi', 'Gurgaon', 'Noida',
+    'Delhi', 'New Delhi', 'Gurgaon', 'Noida', 'Faridabad',
     // Karnataka
-    'Bangalore', 'Mysore', 'Hubli', 'Dharwad', 'Belgaum',
+    'Bangalore', 'Mysore', 'Hubli-Dharwad', 'Belgaum', 'Mangalore', 'Gulbarga',
     // Telangana
-    'Hyderabad', 'Warangal', 'Nizamabad',
+    'Hyderabad', 'Warangal', 'Nizamabad', 'Karimnagar',
     // Gujarat
-    'Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Bhavnagar',
+    'Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Bhavnagar', 'Jamnagar', 'Junagadh',
     // Tamil Nadu
-    'Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli', 'Salem',
+    'Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli', 'Salem', 'Tirunelveli', 'Erode',
     // West Bengal
-    'Kolkata', 'Howrah', 'Durgapur', 'Asansol',
+    'Kolkata', 'Howrah', 'Durgapur', 'Asansol', 'Siliguri',
     // Rajasthan
-    'Jaipur', 'Jodhpur', 'Kota', 'Bikaner', 'Ajmer',
+    'Jaipur', 'Jodhpur', 'Kota', 'Bikaner', 'Ajmer', 'Udaipur', 'Bhilwara',
     // Uttar Pradesh
-    'Lucknow', 'Kanpur', 'Ghaziabad', 'Agra', 'Varanasi', 'Meerut', 'Prayagraj', 'Bareilly',
+    'Lucknow', 'Kanpur', 'Ghaziabad', 'Agra', 'Varanasi', 'Meerut', 'Prayagraj', 'Bareilly', 'Aligarh', 'Moradabad', 'Saharanpur', 'Gorakhpur', 'Jhansi',
     // Madhya Pradesh
-    'Indore', 'Bhopal', 'Jabalpur', 'Gwalior',
+    'Indore', 'Bhopal', 'Jabalpur', 'Gwalior', 'Ujjain', 'Sagar',
     // Andhra Pradesh
-    'Visakhapatnam', 'Vijayawada', 'Guntur', 'Nellore',
+    'Visakhapatnam', 'Vijayawada', 'Guntur', 'Nellore', 'Kurnool', 'Rajahmundry', 'Tirupati',
     // Bihar
-    'Patna', 'Gaya', 'Bhagalpur',
+    'Patna', 'Gaya', 'Bhagalpur', 'Muzaffarpur',
     // Punjab
-    'Ludhiana', 'Amritsar', 'Jalandhar', 'Patiala',
+    'Ludhiana', 'Amritsar', 'Jalandhar', 'Patiala', 'Bathinda',
     // Haryana
-    'Faridabad', 'Panipat', 'Ambala',
+    'Panipat', 'Ambala', 'Yamunanagar', 'Rohtak', 'Hisar',
     // Kerala
-    'Kochi', 'Thiruvananthapuram', 'Kozhikode', 'Thrissur',
+    'Kochi', 'Thiruvananthapuram', 'Kozhikode', 'Thrissur', 'Malappuram', 'Kollam',
     // Odisha
-    'Bhubaneswar', 'Cuttack', 'Rourkela',
+    'Bhubaneswar', 'Cuttack', 'Rourkela', 'Berhampur',
     // Assam
-    'Guwahati',
+    'Guwahati', 'Silchar', 'Dibrugarh',
     // Chhattisgarh
-    'Raipur', 'Bhilai',
+    'Raipur', 'Bhilai', 'Bilaspur',
     // Jharkhand
-    'Ranchi', 'Dhanbad', 'Jamshedpur',
+    'Ranchi', 'Dhanbad', 'Jamshedpur', 'Bokaro Steel City',
     // Uttarakhand
-    'Dehradun',
+    'Dehradun', 'Haridwar', 'Haldwani',
     // Jammu & Kashmir
     'Srinagar', 'Jammu',
     // Himachal Pradesh
-    'Shimla',
+    'Shimla', 'Dharamshala',
     // Goa
-    'Panaji',
-    // Others
-    'Chandigarh', 'Puducherry', 'Port Blair', 'Gangtok', 'Shillong', 'Imphal', 'Kohima', 'Agartala'
-  ].sort();
+    'Panaji', 'Vasco da Gama', 'Margao',
+    // Others & Union Territories
+    'Chandigarh', 'Puducherry', 'Port Blair', 'Gangtok', 'Shillong', 'Imphal', 'Kohima', 'Agartala', 'Itanagar', 'Aizawl'
+  ].sort((a, b) => a.localeCompare(b));
 
   const dropdownRef = useRef(null);
   const mobileMenuRef = useRef(null);

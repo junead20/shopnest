@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema({
     city: { type: String, required: true },
     state: { type: String, required: true },
     zipCode: { type: String, required: true },
-    country: { type: String, required: true, default: 'USA' },
+    country: { type: String, required: true, default: 'India' },
     isDefault: { type: Boolean, default: false }
   }],
   phoneNumber: {
