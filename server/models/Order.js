@@ -142,6 +142,17 @@ const orderSchema = new mongoose.Schema({
 
 // Pre-save hook to generate tracking number on creation
 orderSchema.pre('save', function(next) {
+    // Clean phone number: Remove all non-numeric characters (like +91, -, spaces)
+    if (this.shippingAddress?.phoneNumber) {
+        const cleaned = this.shippingAddress.phoneNumber.replace(/\D/g, '');
+        // If it starts with 91 and is 12 digits, strip the 91
+        if (cleaned.length === 12 && cleaned.startsWith('91')) {
+            this.shippingAddress.phoneNumber = cleaned.slice(2);
+        } else {
+            this.shippingAddress.phoneNumber = cleaned;
+        }
+    }
+
     if (this.isNew && !this.trackingNumber) {
         const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         let randomId = '';

@@ -100,7 +100,9 @@ const Checkout = () => {
 
         } catch (err) {
             console.error('Checkout Error:', err);
-            setError("Could not complete order. Please try again.");
+            // If err is an object, try to extract message, otherwise use string
+            const errorMessage = typeof err === 'string' ? err : (err.message || "Could not complete order. Please try again.");
+            setError(errorMessage);
             setVerifying(false);
         }
     };
