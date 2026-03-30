@@ -4,7 +4,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { FaTruck, FaMapMarkerAlt, FaQrcode, FaShieldAlt, FaCheckCircle, FaSpinner } from 'react-icons/fa';
 import { createOrder } from '../store/slices/orderSlice';
-import { clearCart } from '../store/slices/cartSlice';
 import { formatINR } from '../utils/currency';
 
 const Checkout = () => {
@@ -81,8 +80,7 @@ const Checkout = () => {
 
             const order = await dispatch(createOrder(orderData)).unwrap();
             
-            // Success! Clear cart and navigate
-            dispatch(clearCart());
+            // Success! Navigate to confirmation page
             setVerifying(false);
             
             // Critical: Scroll to top before navigation for better visibility

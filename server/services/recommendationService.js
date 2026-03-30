@@ -14,7 +14,11 @@ class RecommendationService {
    * Generates a text-based user interest profile from their previous orders and wishlist.
    */
   async _getUserInterestProfile(userId) {
-    try {
+      if (!userId) {
+          return "The shopper is a guest friend who appreciates effortless elegance. They want to see the best of ShopNest's curation.";
+      }
+      
+      try {
       const [user, orders, wishlist] = await Promise.all([
         require('../models/User').findById(userId),
         Order.find({ user: userId }).populate('orderItems.product'),

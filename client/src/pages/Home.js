@@ -10,7 +10,6 @@ import {
   FaRegHeart,
   FaChevronLeft,
   FaChevronRight,
-  FaMagic,
   FaLaptop,
   FaTshirt,
   FaHome,
@@ -356,21 +355,10 @@ const Home = () => {
           </div>
         </div>
 
-        {user ? (
-          <RecommendationsSection type="personalized" title="Handpicked Gems Just for You" />
-        ) : (
-          <div className="mb-12 bg-gradient-to-r from-purple-50 to-indigo-50 p-8 rounded-3xl border border-purple-100 flex items-center justify-between shadow-sm">
-            <div>
-              <h2 className="text-2xl font-black text-slate-800 mb-2 flex items-center gap-2 tracking-tight">
-                <FaMagic className="text-indigo-500 animate-pulse" /> Want your own Personal Stylist?
-              </h2>
-              <p className="text-slate-600 font-medium italic">Join us to unlock a curated selection of products handpicked specifically for your unique style.</p>
-            </div>
-            <Link to="/login" className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:shadow-lg hover:scale-105 transition-all shadow-md">
-              Start My Style Journey
-            </Link>
-          </div>
-        )}
+        <RecommendationsSection 
+            type="personalized" 
+            title={user ? "Handpicked Gems Just for You" : "Trending Curations for You"} 
+        />
       </div>
     </div>
   );

@@ -8,9 +8,9 @@ const { authMiddleware } = require('../middleware/auth');
  * @desc    Get personalized product recommendations for the logged-in user
  * @access  Private
  */
-router.get('/personalized', authMiddleware, async (req, res) => {
+router.get('/personalized', async (req, res) => {
     try {
-        const recommendations = await recommendationService.getPersonalizedRecommendations(req.user.id);
+        const recommendations = await recommendationService.getPersonalizedRecommendations(req.user?.id);
         res.json(recommendations);
     } catch (error) {
         console.error('Error fetching personalized recommendations:', error);

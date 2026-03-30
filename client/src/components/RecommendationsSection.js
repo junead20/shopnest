@@ -37,11 +37,7 @@ const RecommendationsSection = ({ type = 'personalized', productId = null, title
             }
         };
 
-        if (type === 'personalized' && !user) {
-            setLoading(false);
-            return;
-        }
-
+        // Always fetch recommendations, the service handles guest curations now.
         fetchRecommendations();
     }, [type, productId, user]);
 
