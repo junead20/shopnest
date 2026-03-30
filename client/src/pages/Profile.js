@@ -180,7 +180,7 @@ const Profile = () => {
               <div className="space-y-3">
                 {profile.addresses.map((addr, index) => (
                   <div key={index} className="border p-3 rounded-lg">
-                    <p>{addr.address}</p>
+                    <p className="font-semibold text-gray-800">{addr.street}</p>
                     <p>{addr.city}, {addr.state} - {addr.zipCode}</p>
                     <p>{addr.country}</p>
                     {addr.isDefault && (
