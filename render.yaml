@@ -1,8 +1,0 @@
-services:
-  - type: web
-    name: shopnest-api
-    runtime: node
-    plan: free
-    region: ohio
-    buildCommand: cd server && npm install
-    startCommand: cd server && node server.js
