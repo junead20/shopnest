@@ -48,10 +48,6 @@ const RecommendationsSection = ({ type = 'personalized', productId = null, title
     const handleAddToCart = (product, e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (!user) {
-            showToast('Please login to continue curation of your cart.', 'info');
-            return;
-        }
         dispatch(addToCart({
             product: product._id,
             name: product.name,

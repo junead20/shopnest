@@ -81,10 +81,6 @@ const ProductDetails = () => {
 
 
   const handleAddToCart = () => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
 
     dispatch(addToCart({
       product: product._id,
@@ -142,10 +138,6 @@ const ProductDetails = () => {
   };
 
   const handleBuyNow = () => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
 
     dispatch(addToCart({
       product: product._id,

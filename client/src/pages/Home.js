@@ -130,11 +130,6 @@ const Home = () => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (!user) {
-      showToast('Please login to add items to your cart', 'info');
-      return;
-    }
-
     dispatch(addToCart({
       product: product._id,
       name: product.name,

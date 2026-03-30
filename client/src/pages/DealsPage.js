@@ -178,11 +178,6 @@ const DealsPage = () => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (!user) {
-      showToast('Please login to add your selection to the cart.', 'info');
-      return;
-    }
-
     dispatch(addToCart({
       product: product._id,
       name: product.name,

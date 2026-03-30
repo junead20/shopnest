@@ -105,11 +105,6 @@ const CategoryPage = () => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-
     dispatch(addToCart({
       product: product._id,
       name: product.name,
