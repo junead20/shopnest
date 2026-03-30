@@ -1,6 +1,6 @@
 // client/src/pages/Home.js
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   FaStar,
@@ -28,6 +28,7 @@ import { useToast } from '../context/ToastContext';
 
 const Home = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { showToast } = useToast();
 
   const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -39,18 +40,15 @@ const Home = () => {
 
   // SIMPLE DIRECT FUNCTIONS - NO ARRAYS, NO OBJECTS
   const handleTodayClick = () => {
-    console.log('🚀 TODAYS DEALS CLICKED - Going to /deals?type=today');
-    window.location.href = 'http://localhost:3000/deals?type=today'; // Direct window location change
+    navigate('/deals?type=today');
   };
-
+  
   const handleSummerClick = () => {
-    console.log('🌞 SUMMER SALE CLICKED - Going to /deals?type=summer');
-    window.location.href = 'http://localhost:3000/deals?type=summer';
+    navigate('/deals?type=summer');
   };
-
+  
   const handleHomeClick = () => {
-    console.log('🏠 HOME ESSENTIALS CLICKED - Going to /deals?type=home');
-    window.location.href = 'http://localhost:3000/deals?type=home';
+    navigate('/deals?type=home');
   };
 
   const categories = [
