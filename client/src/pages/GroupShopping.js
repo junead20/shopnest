@@ -42,7 +42,7 @@ const GroupShopping = () => {
         } finally {
             setLoading(false);
         }
-    }, [token, dispatch, navigate]);
+    }, [token, dispatch, navigate, showToast]);
 
     useEffect(() => {
         const SOCKET_URL = process.env.REACT_APP_API_URL 
