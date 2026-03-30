@@ -27,7 +27,7 @@ const deals = {
   today: {
     title: "Todays Deals",
     icon: <FaFire className="text-2xl text-white" />,
-    color: 'from-slate-800 to-slate-900',
+    color: 'from-indigo-600 to-blue-700',
     description: "Top Essentials at Best Prices",
     filter: (p) => p.category === 'Electronics' && p.price < 5000
   },

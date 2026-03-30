@@ -196,7 +196,7 @@ const OrderDetails = () => {
                   />
                   <div className="flex-1">
                     <Link 
-                      to={`/product/${item.product}`}
+                      to={`/product/${item.product._id || item.product}`}
                       className="font-semibold hover:text-yellow-500"
                     >
                       {item.name}

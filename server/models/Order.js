@@ -140,6 +140,26 @@ const orderSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Pre-save hook to generate tracking number on creation
+orderSchema.pre('save', function(next) {
+    if (this.isNew && !this.trackingNumber) {
+        const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        let randomId = '';
+        for (let i = 0; i < 8; i++) {
+            randomId += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        this.trackingNumber = `SN-TRK-${randomId}`;
+        
+        // Initial estimated delivery (10 days from order)
+        if (!this.estimatedDelivery) {
+            const deliveryDate = new Date();
+            deliveryDate.setDate(deliveryDate.getDate() + 10);
+            this.estimatedDelivery = deliveryDate;
+        }
+    }
+    next();
+});
+
 // Update status with history tracking
 orderSchema.methods.updateStatus = function(newStatus, userId, note = '') {
   this.status = newStatus;

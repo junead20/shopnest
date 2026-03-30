@@ -85,6 +85,7 @@ router.post('/create', authMiddleware, async (req, res) => {
 router.get('/:token', authMiddleware, async (req, res) => {
     try {
         const group = await GroupCart.findOne({ shareToken: req.params.token })
+            .populate('admin', 'name email')
             .populate('members.user', 'name email')
             .populate('items.product')
             .populate('items.addedBy', 'name')
@@ -95,6 +96,16 @@ router.get('/:token', authMiddleware, async (req, res) => {
         // Filter out members whose user was deleted (populated as null)
         if (group.members) {
             group.members = group.members.filter(m => m.user !== null);
+        }
+
+        // Filter out votes and items from deleted users
+        if (group.items) {
+            group.items.forEach(item => {
+                if (item.votes) {
+                    item.votes = item.votes.filter(v => v.user !== null);
+                }
+            });
+            // We keep the items even if addedBy is null, but we'll show "Unknown" in frontend
         }
         
         res.json(group);

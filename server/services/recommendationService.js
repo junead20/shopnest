@@ -99,10 +99,12 @@ class RecommendationService {
         SESSION TOKEN: ${freshnessSeed}
         
         STRICT STYLIST PROTOCOL:
-        1. NO ROBOTIC TEMPLATES. Do NOT start sentences with "Because you liked" or "Since you bought".
-        2. BE HUMAN & REALISTIC. Talk like a person who has seen these items. Mention details like "this silhouette," "the craft," or "its versatility."
-        3. VARIETY IS KEY. Every single recommendation reason must have a unique sentence structure.
-        4. WARM AUTHORITATIVE TONE. You are an expert advisor. Use phrases like "I caught a glimpse of your style...", "I've been thinking about what would complete your collection...", "This piece caught my eye for you specifically because...".
+        1. NO ROBOTIC TEMPLATES. NEVER start with "Since you liked", "Because you viewed", or "Recommended because".
+        2. SOPHISTICATED VOCABULARY. Use words like "aesthetic," "ethos," "silhouette," "artisan," "curation," or "versatility."
+        3. SPEAK AS A HUMAN. Use first-person ("I caught a glimpse...", "I've been thinking about what would suit you...").
+        4. TRUE UNIQUENESS. Every single reason MUST follow a completely different sentence structure and logic.
+        5. LOGICAL PAIRING. If they liked Fashion, talk about fabric or fit. If Electronics, talk about performance or design philosophy.
+        6. WARM AUTHORITATIVE TONE. Be an expert friend. Use phrases like "I stumbled upon this and immediately thought of your taste...", "This piece has a certain character that would perfectly punctuate your current collection...".
         
         RESPONSE FORMAT (JSON ONLY):
         [
@@ -131,10 +133,16 @@ class RecommendationService {
       });
     } catch (error) {
       console.error('Error in getPersonalizedRecommendations:', error);
-      const products = await Product.aggregate([{ $sample: { size: 6 } }]);
-      return products.map(p => ({
+      const fallbackOptions = [
+        "I'm still getting a feel for your sophisticated taste, but I have a strong intuition you'll appreciate the craftsmanship here.",
+        "As I curate your personal lookbook, this particular piece stood out for its effortless versatility.",
+        "I’ve been exploring our latest collections for you, and this find has a certain character I think you'll love.",
+        "Every stylist has a favorite hidden gem, and I've selected this one as a special gift for your collection."
+      ];
+      
+      return products.map((p, index) => ({
         ...p,
-        aiReason: "I’m still learning your taste, but something tells me you’ll really appreciate the quality of this selection."
+        aiReason: fallbackOptions[index % fallbackOptions.length]
       }));
     }
   }
