@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: shopnest-api
+    env: node
+    plan: free
+    region: ohio
+    buildCommand: cd server && npm install
+    startCommand: cd server && node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - fromGroup: shopnest-secrets
