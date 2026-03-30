@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { FaTruck, FaMapMarkerAlt, FaQrcode, FaShieldAlt, FaCheckCircle, FaSpinner } from 'react-icons/fa';
 import { createOrder } from '../store/slices/orderSlice';
+import { addToCart } from '../store/slices/cartSlice';
 import { formatINR } from '../utils/currency';
 
 const Checkout = () => {
@@ -79,6 +80,11 @@ const Checkout = () => {
             };
 
             const order = await dispatch(createOrder(orderData)).unwrap();
+            
+            // Success! Re-add items to cart as requested so they are present even after order
+            cartItems.forEach(item => {
+                dispatch(addToCart(item));
+            });
             
             // Success! Navigate to confirmation page
             setVerifying(false);

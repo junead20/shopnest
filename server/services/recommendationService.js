@@ -137,6 +137,12 @@ class RecommendationService {
       });
     } catch (error) {
       console.error('Error in getPersonalizedRecommendations:', error);
+      
+      const fallbackProducts = await Product.aggregate([
+        { $match: { countInStock: { $gt: 0 } } },
+        { $sample: { size: 4 } }
+      ]);
+
       const fallbackOptions = [
         "I'm still getting a feel for your sophisticated taste, but I have a strong intuition you'll appreciate the craftsmanship here.",
         "As I curate your personal lookbook, this particular piece stood out for its effortless versatility.",
@@ -144,7 +150,7 @@ class RecommendationService {
         "Every stylist has a favorite hidden gem, and I've selected this one as a special gift for your collection."
       ];
       
-      return products.map((p, index) => ({
+      return fallbackProducts.map((p, index) => ({
         ...p,
         aiReason: fallbackOptions[index % fallbackOptions.length]
       }));
